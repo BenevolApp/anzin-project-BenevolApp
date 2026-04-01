@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend:
-    name: Backend - Typecheck & Audit
+    name: Backend - Typecheck, Lint & Audit
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -33,6 +33,10 @@ jobs:
       - name: Typecheck
         working-directory: backend
         run: npm run typecheck
+
+      - name: Lint
+        working-directory: backend
+        run: npm run lint
 
       - name: Security audit
         working-directory: backend
