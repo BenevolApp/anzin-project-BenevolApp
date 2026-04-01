@@ -1,28 +1,25 @@
-import {config} from "dotenv"
+import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import type { Express } from "express";
 
-
-
 // Import Routes
 
-
-
-// Cofig
+// Config
 const PORT = process.env.PORT || 3000;
 const app: Express = express();
 
-config();
-
-
-
-// Body parsing middlwares
+// Body parsing middlewares
 app.use(cors());
 app.use(helmet());
-app.use(express.json())
-app.use(express.urlencoded({extended: true}))
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// API Routes
 
- // API Routes
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+export default app;
