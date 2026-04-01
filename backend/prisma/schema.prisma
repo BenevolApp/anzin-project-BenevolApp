@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,4 +8,452 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  admin
+  benevole
+  beneficiaire
+
+  @@map("user_role")
+}
+
+enum AccountStatus {
+  pending
+  active
+  rejected
+  suspended
+
+  @@map("account_status")
+}
+
+enum MissionStatus {
+  draft
+  published
+  cancelled
+  completed
+
+  @@map("mission_status")
+}
+
+enum ApplicationStatus {
+  pending
+  accepted
+  rejected
+  waitlisted
+
+  @@map("application_status")
+}
+
+enum InterventionStatus {
+  planned
+  done
+  missed
+
+  @@map("intervention_status")
+}
+
+enum RecurrenceType {
+  one_time
+  multi_day
+  weekly
+
+  @@map("recurrence_type")
+}
+
+enum AppointmentType {
+  remote
+  in_person
+
+  @@map("appointment_type")
+}
+
+enum AppointmentStatus {
+  scheduled
+  completed
+  cancelled
+
+  @@map("appointment_status")
+}
+
+enum DayOfWeek {
+  lundi
+  mardi
+  mercredi
+  jeudi
+  vendredi
+  samedi
+  dimanche
+
+  @@map("day_of_week")
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+// 1. ORGANISATIONS — table fondatrice multi-tenant
+model Organisation {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+
+  profiles                Profile[]
+  profiles_sensitive      ProfileSensitive[]
+  types_service           TypesService[]
+  adresses                Adresse[]
+  missions                Mission[]
+  disponibilites          Disponibilite[]
+  validation_appointments ValidationAppointment[]
+  mission_followups       MissionFollowup[]
+  admin_notes             AdminNote[]
+  notifications           Notification[]
+  audit_logs              AuditLog[]
+
+  @@map("organisations")
+}
+
+// 2. PROFILES — données publiques, id = auth.users.id
+model Profile {
+  id                  String        @id @db.Uuid
+  organisation_id     String        @db.Uuid
+  role                UserRole      @default(benevole)
+  first_name          String?
+  photo_url           String?
+  status              AccountStatus @default(pending)
+  managed_by_admin_id String?       @db.Uuid
+  expo_token          String?
+  created_at          DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime      @updatedAt @db.Timestamptz(6)
+
+  organisation              Organisation            @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+  managed_by_admin          Profile?                @relation("AdminProxy", fields: [managed_by_admin_id], references: [id], onDelete: SetNull)
+  managed_beneficiaries     Profile[]               @relation("AdminProxy")
+  profile_sensitive         ProfileSensitive?
+  adresses                  Adresse[]
+  disponibilites            Disponibilite[]
+  validation_appointments   ValidationAppointment[] @relation("UserAppointments")
+  appointments_created      ValidationAppointment[] @relation("AdminCreatedAppointments")
+  admin_notes_written       AdminNote[]             @relation("AdminNoteAuthor")
+  admin_notes_received      AdminNote[]             @relation("AdminNoteTargetProfile")
+  notifications             Notification[]
+  audit_logs                AuditLog[]
+  mission_applications      MissionApplication[]
+  interventions             MissionIntervention[]
+  missions_created          Mission[]               @relation("MissionCreatedBy")
+  missions_as_beneficiaire  Mission[]               @relation("MissionBeneficiaire")
+  mission_followups_created MissionFollowup[]
+  beneficiary_qr            BeneficiaryQr?
+
+  @@index([organisation_id])
+  @@index([role])
+  @@index([status])
+  @@map("profiles")
+}
+
+// 3. PROFILES_SENSITIVE — données RGPD séparées (relation 1-1 avec profiles)
+model ProfileSensitive {
+  id              String    @id @db.Uuid
+  organisation_id String    @db.Uuid
+  last_name       String?
+  email           String?   @unique
+  phone           String?
+  address         String?
+  date_of_birth   DateTime? @db.Date
+  rsa_situation   String?
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime  @updatedAt @db.Timestamptz(6)
+
+  profile      Profile      @relation(fields: [id], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+
+  @@map("profiles_sensitive")
+}
+
+// 4. TYPES_SERVICE — catalogue des services proposés
+model TypesService {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organisation_id   String   @db.Uuid
+  libelle           String
+  description       String?
+  duree_estimee_min Int?
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+  missions     Mission[]
+
+  @@map("types_service")
+}
+
+// 5. ADRESSES — adresses des profils et missions
+model Adresse {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organisation_id String   @db.Uuid
+  profile_id      String?  @db.Uuid
+  rue             String?
+  numero          String?
+  code_postal     String?
+  ville           String?
+  pays            String   @default("France")
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+  profile      Profile?     @relation(fields: [profile_id], references: [id], onDelete: SetNull)
+  missions     Mission[]
+
+  @@map("adresses")
+}
+
+// 6. MISSIONS
+model Mission {
+  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organisation_id     String        @db.Uuid
+  beneficiaire_id     String        @db.Uuid
+  service_id          String        @db.Uuid
+  location_id         String?       @db.Uuid
+  status              MissionStatus @default(draft)
+  title               String
+  description         String?
+  competences         String[]
+  created_by_admin_id String?       @db.Uuid
+  created_at          DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime      @updatedAt @db.Timestamptz(6)
+
+  organisation  Organisation         @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+  beneficiaire  Profile              @relation("MissionBeneficiaire", fields: [beneficiaire_id], references: [id], onDelete: Restrict)
+  service       TypesService         @relation(fields: [service_id], references: [id], onDelete: Restrict)
+  location      Adresse?             @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  created_by    Profile?             @relation("MissionCreatedBy", fields: [created_by_admin_id], references: [id], onDelete: SetNull)
+  schedules     MissionSchedule[]
+  applications  MissionApplication[]
+  interventions MissionIntervention[]
+  followups     MissionFollowup[]
+  admin_notes   AdminNote[]
+
+  @@index([organisation_id])
+  @@index([status])
+  @@index([beneficiaire_id])
+  @@map("missions")
+}
+
+// 7. MISSION_SCHEDULES — planning des missions
+model MissionSchedule {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mission_id      String         @db.Uuid
+  recurrence_type RecurrenceType
+  start_date      DateTime       @db.Date
+  end_date        DateTime?      @db.Date
+  day_of_week     DayOfWeek?
+  start_time      DateTime       @db.Time(6)
+  end_time        DateTime       @db.Time(6)
+  created_at      DateTime       @default(now()) @db.Timestamptz(6)
+
+  mission Mission @relation(fields: [mission_id], references: [id], onDelete: Cascade)
+
+  @@map("mission_schedules")
+}
+
+// 8. MISSION_APPLICATIONS — candidatures bénévoles + liste d'attente
+model MissionApplication {
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mission_id  String            @db.Uuid
+  benevole_id String            @db.Uuid
+  status      ApplicationStatus @default(pending)
+  position    Int?
+  created_at  DateTime          @default(now()) @db.Timestamptz(6)
+
+  mission  Mission @relation(fields: [mission_id], references: [id], onDelete: Cascade)
+  benevole Profile @relation(fields: [benevole_id], references: [id], onDelete: Cascade)
+
+  @@unique([mission_id, benevole_id])
+  @@index([mission_id])
+  @@index([benevole_id])
+  @@index([status])
+  @@map("mission_applications")
+}
+
+// 9. MISSION_INTERVENTIONS — instances réelles de missions
+model MissionIntervention {
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mission_id     String             @db.Uuid
+  benevole_id    String             @db.Uuid
+  scheduled_date DateTime           @db.Date
+  start_time     DateTime?          @db.Time(6)
+  end_time       DateTime?          @db.Time(6)
+  status         InterventionStatus @default(planned)
+  created_at     DateTime           @default(now()) @db.Timestamptz(6)
+
+  mission           Mission           @relation(fields: [mission_id], references: [id], onDelete: Cascade)
+  benevole          Profile           @relation(fields: [benevole_id], references: [id], onDelete: Restrict)
+  pointage          Pointage?
+  attendance_tokens AttendanceToken[]
+
+  @@index([mission_id])
+  @@index([benevole_id])
+  @@index([scheduled_date])
+  @@map("mission_interventions")
+}
+
+// 10. POINTAGES — check-in / check-out (UNIQUE par intervention)
+model Pointage {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  intervention_id    String    @unique @db.Uuid
+  check_in_time      DateTime? @db.Timestamptz(6)
+  check_out_time     DateTime? @db.Timestamptz(6)
+  ip_address         String?   @db.Inet
+  user_agent         String?
+  device_fingerprint String?
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+
+  intervention MissionIntervention @relation(fields: [intervention_id], references: [id], onDelete: Cascade)
+
+  @@index([check_in_time])
+  @@map("pointages")
+}
+
+// 11. BENEFICIARY_QR — QR code permanent par bénéficiaire
+model BeneficiaryQr {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  beneficiary_id String   @unique @db.Uuid
+  qr_token       String   @unique
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  beneficiary Profile @relation(fields: [beneficiary_id], references: [id], onDelete: Cascade)
+
+  @@map("beneficiary_qr")
+}
+
+// 12. ATTENDANCE_TOKENS — tokens HMAC anti-fraude, usage unique
+model AttendanceToken {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  intervention_id String   @db.Uuid
+  token_hash      String   @unique
+  valid_from      DateTime @db.Timestamptz(6)
+  valid_until     DateTime @db.Timestamptz(6)
+  used            Boolean  @default(false)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  intervention MissionIntervention @relation(fields: [intervention_id], references: [id], onDelete: Cascade)
+
+  @@map("attendance_tokens")
+}
+
+// 13. DISPONIBILITES — disponibilités hebdomadaires des bénévoles
+model Disponibilite {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profile_id      String    @db.Uuid
+  organisation_id String    @db.Uuid
+  jour_semaine    DayOfWeek
+  heure_debut     DateTime? @db.Time(6)
+  heure_fin       DateTime? @db.Time(6)
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+
+  profile      Profile      @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+
+  @@map("disponibilites")
+}
+
+// 14. VALIDATION_APPOINTMENTS — RDV de validation de compte
+model ValidationAppointment {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String            @db.Uuid
+  organisation_id  String            @db.Uuid
+  type             AppointmentType
+  appointment_date DateTime          @db.Timestamptz(6)
+  location         String?
+  status           AppointmentStatus @default(scheduled)
+  created_by_admin String?           @db.Uuid
+  created_at       DateTime          @default(now()) @db.Timestamptz(6)
+
+  user         Profile      @relation("UserAppointments", fields: [user_id], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+  admin        Profile?     @relation("AdminCreatedAppointments", fields: [created_by_admin], references: [id], onDelete: SetNull)
+
+  @@map("validation_appointments")
+}
+
+// 15. MISSION_FOLLOWUPS — notes de suivi admin par mission
+model MissionFollowup {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mission_id       String   @db.Uuid
+  organisation_id  String   @db.Uuid
+  scheduled_date   DateTime @db.Timestamptz(6)
+  notes            String?
+  created_by_admin String?  @db.Uuid
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+
+  mission      Mission      @relation(fields: [mission_id], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+  admin        Profile?     @relation(fields: [created_by_admin], references: [id], onDelete: SetNull)
+
+  @@map("mission_followups")
+}
+
+// 16. ADMIN_NOTES — notes privées admin (profil XOR mission)
+// Note: la contrainte XOR (target_profile_id XOR target_mission_id) doit être
+// ajoutée via une migration SQL brute (non supportée nativement par Prisma)
+model AdminNote {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  admin_id          String   @db.Uuid
+  organisation_id   String   @db.Uuid
+  target_profile_id String?  @db.Uuid
+  target_mission_id String?  @db.Uuid
+  note              String
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  admin          Profile      @relation("AdminNoteAuthor", fields: [admin_id], references: [id], onDelete: Restrict)
+  organisation   Organisation @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+  target_profile Profile?     @relation("AdminNoteTargetProfile", fields: [target_profile_id], references: [id], onDelete: Cascade)
+  target_mission Mission?     @relation(fields: [target_mission_id], references: [id], onDelete: Cascade)
+
+  @@map("admin_notes")
+}
+
+// 17. NOTIFICATIONS — système + inbox humaine admin
+model Notification {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String   @db.Uuid
+  organisation_id String   @db.Uuid
+  type            String
+  title           String
+  message         String?
+  is_read         Boolean  @default(false)
+  is_human        Boolean  @default(false)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  user         Profile      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Restrict)
+
+  @@index([user_id])
+  @@index([is_read])
+  @@map("notifications")
+}
+
+// 18. AUDIT_LOGS — trace complète des actions sensibles
+model AuditLog {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String?  @db.Uuid
+  organisation_id String?  @db.Uuid
+  action          String
+  entity_type     String?
+  entity_id       String?  @db.Uuid
+  ip_address      String?  @db.Inet
+  user_agent      String?
+  metadata        Json?
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  user         Profile?      @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  organisation Organisation? @relation(fields: [organisation_id], references: [id], onDelete: SetNull)
+
+  @@index([entity_type, entity_id])
+  @@index([created_at])
+  @@index([user_id])
+  @@index([action])
+  @@map("audit_logs")
 }
