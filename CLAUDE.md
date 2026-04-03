@@ -3,6 +3,11 @@
 > Ce fichier est lu automatiquement par Claude Code à chaque session.
 > Il contient le contexte du projet, les conventions, et les notes de session.
 
+> **Règle de branche — OBLIGATOIRE :**
+> - Travail sur la version **web** → branche `web`
+> - Travail sur la version **mobile** → branche `mobile`
+> - Toujours vérifier la branche courante (`git branch`) avant de commencer.
+
 ---
 
 ## 1. Projet
