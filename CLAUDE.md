@@ -240,13 +240,16 @@ DIRECT_URL=postgresql://postgres.[ref]:[pwd]@aws-0-eu-west-1.pooler.supabase.com
 
 | Epic | Titre | Status |
 |------|-------|--------|
-| Epic 1 | Fondation & Déploiement Continu | in-progress |
+| Epic 1 | Fondation & Déploiement Continu | ✅ review |
 | Story 1.1 | Init monorepo Turborepo | ✅ review |
 | Story 1.2 | Supabase + Prisma base | ✅ review |
 | Story 1.3 | CI/CD GitHub Actions | ✅ review |
-| Story 1.4 | Déploiement écran vide prod | backlog |
+| Story 1.4 | Déploiement écran vide prod | ✅ review |
 | Story 1.5 | Monitoring + Backup | backlog |
-| Epic 2 | Accès à la Plateforme | backlog |
+| Epic 2 | Accès à la Plateforme | in-progress |
+| Story 2.1 | Supabase client web + session proxy | ✅ review |
+| Story 2.2 | Pages auth web (login, register, dashboard, callback) | ✅ review |
+| Story 2.3 | Validation admin + RDV planifiable | ✅ review |
 | Epic 3 | Gestion des Missions | backlog |
 | Epic 4 | Présence & Pointage QR | backlog |
 | Epic 5 | Suivi & Valorisation Heures | backlog |
@@ -279,6 +282,37 @@ DIRECT_URL=postgresql://postgres.[ref]:[pwd]@aws-0-eu-west-1.pooler.supabase.com
 <!-- Claude Code : mets à jour cette section à chaque fin de tâche -->
 <!-- Format : date + résumé de ce qui a été fait / décidé / bloqué -->
 
+### 2026-04-04 — Fin de session
+
+**Accompli :**
+- Story 2.3 ✅ — Validation admin :
+  - SQL RLS : `001_rls_helper_functions.sql` (fonctions SECURITY DEFINER pour éviter récursion)
+  - SQL RLS : `002_profiles_policies.sql`, `003_profiles_sensitive_policies.sql`, `004_validation_appointments_policies.sql`, `005_notifications_policies.sql`
+  - `(app)/admin/layout.tsx` — garde rôle admin server-side
+  - `(app)/admin/pending-users/page.tsx` — liste les comptes pending
+  - `pending-users/_components/pending-users-list.tsx` — approve / reject + notification
+  - `pending-users/_components/schedule-appointment-form.tsx` — formulaire RDV (remote/in_person)
+  - Dashboard mis à jour : lien admin si rôle = admin
+
+**Prochaine étape : Story 2.4 (ou Epic 3)**
+- À définir : inscription mobile (Expo) ou démarrer gestion des missions (Epic 3)
+
+- Story 2.2 ✅ — Pages auth web complètes :
+  - `middleware.ts` branchant le proxy Supabase
+  - `(auth)/layout.tsx` + `login/page.tsx` + `login/_components/login-form.tsx`
+  - `(auth)/register/page.tsx` + `register/_components/register-form.tsx`
+  - `(app)/layout.tsx` (vérification session server-side)
+  - `(app)/dashboard/page.tsx` (affiche rôle + prénom depuis user_metadata)
+  - `auth/callback/route.ts` (échange code OAuth/magic link)
+  - `auth/signout/route.ts` (POST → signOut + redirect /login)
+  - `app/page.tsx` → redirect `/dashboard`
+- Proxy.ts corrigé : routes publiques restreintes à `/auth/callback` et `/auth/signout`
+
+**Prochaine étape : Story 2.3 — Validation admin**
+- Page admin pour lister les comptes en attente (`status = pending`)
+- Planification RDV de validation (remote / in_person) → table `validation_appointments`
+- Notification à l'utilisateur lors du changement de statut
+
 ### 2026-04-03 — Fin de session
 
 **Décision architecturale tranchée :**
@@ -288,12 +322,7 @@ DIRECT_URL=postgresql://postgres.[ref]:[pwd]@aws-0-eu-west-1.pooler.supabase.com
 **Accompli :**
 - Template RLS naming créé : `backend/prisma/policies/000_rls_naming_template.sql`
 - Story 1.1 ✅ complète
-
-**Prochaine étape : Story 1.4 — Déploiement écran vide prod**
-- Initialiser `apps/web` (Next.js 15 App Router)
-- Initialiser `apps/mobile` (Expo SDK 54)
-- Mettre en place Turborepo (turbo.json, root package.json workspaces)
-- Déployer web sur Vercel (écran vide)
+- Story 1.4 ✅ — Next.js 16 déployé sur Vercel (branche web)
 
 ### 2026-04-01 — Fin de session
 
@@ -315,3 +344,7 @@ DIRECT_URL=postgresql://postgres.[ref]:[pwd]@aws-0-eu-west-1.pooler.supabase.com
 - **ENUMs MySQL ≠ PostgreSQL** → `CREATE TYPE ... AS ENUM`, jamais inline
 - **`DATETIME` → `TIMESTAMPTZ`** → Toujours avec timezone sur Supabase
 - **Supabase region = irréversible** → EU West (Ireland) obligatoire, vérifier à la création du projet
+- **Trigger `handle_new_user()` doit lire les metadata d'inscription** → Pour que le profil soit créé correctement après `signUp`, le trigger doit extraire `raw_user_meta_data->>'role'`, `->>'first_name'`, `->>'last_name'`. À configurer via SQL Editor Supabase avant de tester l'inscription en prod.
+- **RLS policies — ordre d'application obligatoire** → Appliquer les fichiers `backend/prisma/policies/` dans l'ordre numérique via Supabase SQL Editor. Le fichier `001` (fonctions SECURITY DEFINER) doit être appliqué en premier pour éviter la récursion infinie dans les policies.
+- **Récursion RLS sur `profiles`** → Ne jamais faire `SELECT FROM profiles WHERE id = auth.uid()` directement dans une policy `profiles`. Utiliser `get_my_role()` et `get_my_org_id()` (SECURITY DEFINER) définis dans `001_rls_helper_functions.sql`.
+- **`as never` cast sur la query Supabase** → Le type retourné par `.select()` avec jointure imbriquée n'est pas toujours inféré correctement. Cast `as never` acceptable pour les Server Components MVP ; à typer proprement avec `Database` généré par Supabase CLI si besoin.
