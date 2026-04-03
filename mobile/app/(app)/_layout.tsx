@@ -1,9 +1,10 @@
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
 
 export default function AppLayout() {
   return (
-    <Tabs screenOptions={{ headerShown: false, tabBarStyle: { display: 'none' } }}>
-      <Tabs.Screen name="index" />
-    </Tabs>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="admin/pending-users" />
+    </Stack>
   );
 }

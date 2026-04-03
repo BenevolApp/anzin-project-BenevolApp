@@ -251,10 +251,14 @@ DIRECT_URL=postgresql://postgres.[ref]:[pwd]@aws-0-eu-west-1.pooler.supabase.com
 | Story 1.3 | CI/CD GitHub Actions | ✅ review |
 | Story 1.4 | Déploiement écran vide prod | ✅ review |
 | Story 1.5 | Monitoring + Backup | backlog |
-| Epic 2 | Accès à la Plateforme | in-progress |
+| Epic 2 | Accès à la Plateforme — web + mobile | ✅ review |
 | Story 2.1 | Supabase client web + session proxy | ✅ review |
 | Story 2.2 | Pages auth web (login, register, dashboard, callback) | ✅ review |
-| Story 2.3 | Validation admin + RDV planifiable | ✅ review |
+| Story 2.3 | Validation admin + RDV planifiable (web) | ✅ review |
+| Story 2.4 | Dashboard status-aware (web) | ✅ review |
+| Story M2.1 | Expo Router + Supabase client mobile | ✅ review |
+| Story M2.2 | Auth screens mobile (login, register, dashboard) | ✅ review |
+| Story M2.3 | Admin pending users mobile + dashboard status-aware | ✅ review |
 | Epic 3 | Gestion des Missions | backlog |
 | Epic 4 | Présence & Pointage QR | backlog |
 | Epic 5 | Suivi & Valorisation Heures | backlog |
@@ -353,3 +357,4 @@ DIRECT_URL=postgresql://postgres.[ref]:[pwd]@aws-0-eu-west-1.pooler.supabase.com
 - **RLS policies — ordre d'application obligatoire** → Appliquer les fichiers `backend/prisma/policies/` dans l'ordre numérique via Supabase SQL Editor. Le fichier `001` (fonctions SECURITY DEFINER) doit être appliqué en premier pour éviter la récursion infinie dans les policies.
 - **Récursion RLS sur `profiles`** → Ne jamais faire `SELECT FROM profiles WHERE id = auth.uid()` directement dans une policy `profiles`. Utiliser `get_my_role()` et `get_my_org_id()` (SECURITY DEFINER) définis dans `001_rls_helper_functions.sql`.
 - **`as never` cast sur la query Supabase** → Le type retourné par `.select()` avec jointure imbriquée n'est pas toujours inféré correctement. Cast `as never` acceptable pour les Server Components MVP ; à typer proprement avec `Database` généré par Supabase CLI si besoin.
+- **Switch de branche git + monorepo pnpm** → Changer de branche (ex: web → mobile → web) peut invalider les `node_modules` si les `package.json` diffèrent entre branches. Toujours relancer `pnpm install` depuis la racine après un `git checkout`.

@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { supabase } from '@/utils/supabase/client';
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
@@ -10,15 +11,54 @@ const ROLE_LABELS: Record<string, string> = {
   beneficiaire: 'Bénéficiaire',
 };
 
+const STATUS_BANNER = {
+  pending: {
+    bg: 'bg-amber-50 border-amber-200',
+    text: 'text-amber-800',
+    title: 'Compte en attente de validation',
+    message:
+      'Votre inscription a bien été reçue. Un administrateur va valider votre compte prochainement.',
+  },
+  rejected: {
+    bg: 'bg-red-50 border-red-200',
+    text: 'text-red-800',
+    title: 'Inscription non retenue',
+    message:
+      "Votre demande d'inscription n'a pas pu être validée. Contactez l'administration.",
+  },
+  suspended: {
+    bg: 'bg-orange-50 border-orange-200',
+    text: 'text-orange-800',
+    title: 'Compte suspendu',
+    message: "Votre compte est temporairement suspendu. Contactez l'administration.",
+  },
+};
+
 export default function DashboardScreen() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [status, setStatus] = useState<string>('active');
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) {
+        supabase
+          .from('profiles')
+          .select('status')
+          .eq('id', user.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.status) setStatus(data.status as string);
+          });
+      }
+    });
   }, []);
 
   const role = (user?.user_metadata?.role as string | undefined) ?? 'benevole';
   const firstName = (user?.user_metadata?.first_name as string | undefined) ?? '';
+  const banner = STATUS_BANNER[status as keyof typeof STATUS_BANNER];
+  const isActive = status === 'active';
 
   return (
     <SafeAreaView className="flex-1 bg-zinc-50">
@@ -30,11 +70,39 @@ export default function DashboardScreen() {
           {ROLE_LABELS[role] ?? role}
         </Text>
 
-        <View className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
-          <Text className="text-sm text-zinc-500">
-            Tableau de bord en cours de construction — Epic 3 à venir.
-          </Text>
-        </View>
+        {/* Banner statut */}
+        {banner && (
+          <View className={`mt-6 rounded-2xl border p-4 ${banner.bg}`}>
+            <Text className={`text-sm font-semibold ${banner.text}`}>
+              {banner.title}
+            </Text>
+            <Text className={`text-sm mt-1 ${banner.text} opacity-80`}>
+              {banner.message}
+            </Text>
+          </View>
+        )}
+
+        {/* Contenu principal — uniquement si actif */}
+        {isActive && (
+          <View className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
+            <Text className="text-sm text-zinc-500">
+              Tableau de bord en cours de construction — Epic 3 à venir.
+            </Text>
+          </View>
+        )}
+
+        {/* Raccourci admin */}
+        {role === 'admin' && (
+          <TouchableOpacity
+            className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4"
+            onPress={() => router.push('/(app)/admin/pending-users')}
+          >
+            <Text className="text-sm font-medium text-amber-800">Administration</Text>
+            <Text className="text-sm text-amber-700 mt-1">
+              Gérer les comptes en attente →
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           className="mt-6"
