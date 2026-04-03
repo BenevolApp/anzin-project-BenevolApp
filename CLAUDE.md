@@ -259,7 +259,12 @@ DIRECT_URL=postgresql://postgres.[ref]:[pwd]@aws-0-eu-west-1.pooler.supabase.com
 | Story M2.1 | Expo Router + Supabase client mobile | ✅ review |
 | Story M2.2 | Auth screens mobile (login, register, dashboard) | ✅ review |
 | Story M2.3 | Admin pending users mobile + dashboard status-aware | ✅ review |
-| Epic 3 | Gestion des Missions | backlog |
+| Epic 3 | Gestion des Missions | in-progress |
+| Story 3.1 | Liste + détail missions (web, role-aware) | ✅ review |
+| Story 3.2 | Admin créer/éditer mission + planning (web) | ✅ review |
+| Story 3.3 | Bénévole — postuler à une mission (web) | ✅ review |
+| Story 3.4 | Liste + détail missions (mobile) | backlog |
+| Story 3.5 | Bénévole — postuler (mobile) | backlog |
 | Epic 4 | Présence & Pointage QR | backlog |
 | Epic 5 | Suivi & Valorisation Heures | backlog |
 | Epic 6 | Administration & Communication | backlog |

@@ -76,9 +76,13 @@ export default async function DashboardPage() {
         {/* Contenu principal — uniquement si actif */}
         {isActive && (
           <div className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-zinc-500 text-sm">
-              Tableau de bord en cours de construction — Epic 3 à venir.
-            </p>
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">Accès rapide</p>
+            <a
+              href="/missions"
+              className="block rounded-lg border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 hover:border-zinc-300 transition-colors dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300"
+            >
+              Voir les missions →
+            </a>
           </div>
         )}
 
