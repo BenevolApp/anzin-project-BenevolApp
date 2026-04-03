@@ -23,7 +23,6 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.1",
     "helmet": "^8.1.0",
-    "hpp": "^0.2.3",
     "pg": "^8.20.0",
     "xss-clean": "^0.1.4"
   },
