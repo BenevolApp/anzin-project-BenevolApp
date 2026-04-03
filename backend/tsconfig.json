@@ -36,7 +36,6 @@
     // Recommended Options
     "strict": true,
     "esModuleInterop": true,
-    "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
@@ -44,5 +43,5 @@
     "skipLibCheck": true,
     "ignoreDeprecations": "6.0"
   },
-    "include": ["src/**/*"]
+  "include": ["src/**/*"]
 }
