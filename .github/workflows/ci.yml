@@ -15,32 +15,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache: pnpm
 
       - name: Install dependencies
-        working-directory: backend
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
         working-directory: backend
-        run: npx prisma generate
+        run: pnpm exec prisma generate
         env:
           DIRECT_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
       - name: Typecheck
-        working-directory: backend
-        run: npm run typecheck
+        run: pnpm turbo run typecheck --filter=backend
 
       - name: Lint
-        working-directory: backend
-        run: npm run lint
+        run: pnpm turbo run lint --filter=backend
 
       - name: Security audit
-        working-directory: backend
-        run: npm audit --audit-level=high
+        run: pnpm audit --audit-level=high
