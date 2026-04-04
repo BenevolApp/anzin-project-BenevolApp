@@ -38,6 +38,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<string>('active');
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -51,6 +52,14 @@ export default function DashboardScreen() {
           .then(({ data }) => {
             if (data?.status) setStatus(data.status as string);
           });
+
+        // Nombre de messages non lus
+        supabase
+          .from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_human', true)
+          .eq('is_read', false)
+          .then(({ count }) => setUnreadCount(count ?? 0));
       }
     });
   }, []);
@@ -92,6 +101,19 @@ export default function DashboardScreen() {
               onPress={() => router.push('/(app)/missions')}
             >
               <Text className="text-sm text-zinc-700">Voir les missions →</Text>
+            </TouchableOpacity>
+
+            {/* Messagerie — tous rôles actifs */}
+            <TouchableOpacity
+              className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 flex-row items-center justify-between"
+              onPress={() => router.push('/(app)/inbox')}
+            >
+              <Text className="text-sm text-zinc-700">Messagerie</Text>
+              {unreadCount > 0 && (
+                <View className="rounded-full bg-red-500 px-1.5 py-0.5">
+                  <Text className="text-white text-xs font-bold">{unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
 
             {/* Bénévole : scanner + mes heures */}

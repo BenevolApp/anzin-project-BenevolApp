@@ -169,6 +169,17 @@ export default function PendingUsersScreen() {
                     <Text className="text-red-600 text-sm font-medium">Rejeter</Text>
                   </TouchableOpacity>
                 </View>
+
+                <TouchableOpacity
+                  className="mt-2 rounded-lg border border-zinc-200 py-2 items-center"
+                  onPress={() =>
+                    router.push(
+                      `/(app)/admin/send-message?user_id=${user.id}&user_name=${encodeURIComponent(fullName)}&organisation_id=${user.organisation_id}`
+                    )
+                  }
+                >
+                  <Text className="text-sm text-zinc-600">Envoyer un message</Text>
+                </TouchableOpacity>
               </View>
             );
           })}
