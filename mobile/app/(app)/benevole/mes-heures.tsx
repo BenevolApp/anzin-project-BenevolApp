@@ -13,6 +13,9 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { supabase } from '@/utils/supabase/client';
 
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? 'http://localhost:3000';
+const EXPORT_SECRET = process.env.EXPO_PUBLIC_EXPORT_SECRET ?? '';
+
 interface PointageRecord {
   id: string;
   check_in_time: string;
@@ -40,6 +43,7 @@ export default function MesHeuresScreen() {
   const [pointages, setPointages] = useState<PointageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -120,6 +124,51 @@ export default function MesHeuresScreen() {
     setExporting(false);
   }
 
+  async function handleExportPdf() {
+    if (!EXPORT_SECRET) {
+      Alert.alert('Non configuré', 'Le backend n\'est pas encore configuré pour cet export.');
+      return;
+    }
+    if (pointages.length === 0) {
+      Alert.alert('Aucune donnée', 'Pas de pointages à exporter.');
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    setExportingPdf(true);
+    try {
+      const url = `${BACKEND_URL}/api/export/pdf/${user.id}`;
+      const filename = `attestation_benevole_${new Date().toISOString().slice(0, 10)}.pdf`;
+      const path = `${FileSystem.documentDirectory}${filename}`;
+
+      const result = await FileSystem.downloadAsync(url, path, {
+        headers: { 'x-export-secret': EXPORT_SECRET },
+      });
+
+      if (result.status !== 200) {
+        Alert.alert('Erreur', 'Le serveur n\'a pas pu générer le PDF.');
+        setExportingPdf(false);
+        return;
+      }
+
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(path, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Attestation de bénévolat',
+          UTI: 'com.adobe.pdf',
+        });
+      } else {
+        Alert.alert('PDF disponible', `Fichier enregistré : ${filename}`);
+      }
+    } catch {
+      Alert.alert('Erreur', 'Impossible de contacter le serveur. Vérifiez votre connexion.');
+    }
+    setExportingPdf(false);
+  }
+
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-zinc-50 items-center justify-center">
@@ -154,17 +203,33 @@ export default function MesHeuresScreen() {
         </View>
 
         {/* Export */}
-        <TouchableOpacity
-          className={`rounded-xl py-3.5 items-center mb-6 ${exporting ? 'bg-zinc-300' : 'bg-zinc-900'}`}
-          onPress={handleExport}
-          disabled={exporting}
-        >
-          {exporting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-white text-sm font-medium">Exporter en CSV</Text>
-          )}
-        </TouchableOpacity>
+        <View className="gap-2 mb-6">
+          <TouchableOpacity
+            className={`rounded-xl py-3.5 items-center ${exporting ? 'bg-zinc-300' : 'bg-zinc-900'}`}
+            onPress={handleExport}
+            disabled={exporting}
+          >
+            {exporting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-white text-sm font-medium">Exporter en CSV</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className={`rounded-xl py-3.5 items-center border ${exportingPdf ? 'border-zinc-200 bg-zinc-100' : 'border-zinc-300 bg-white'}`}
+            onPress={handleExportPdf}
+            disabled={exportingPdf || pointages.length === 0}
+          >
+            {exportingPdf ? (
+              <ActivityIndicator color="#52525b" />
+            ) : (
+              <Text className="text-zinc-700 text-sm font-medium">
+                Attestation PDF (conseiller RSA)
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
 
         {/* Liste */}
         <Text className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-3">
