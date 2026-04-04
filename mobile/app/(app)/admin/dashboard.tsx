@@ -105,6 +105,18 @@ export default function AdminDashboardScreen() {
     loadStats();
   }, [loadStats]);
 
+  // Realtime — rafraîchissement automatique à chaque mutation sur les tables critiques
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, loadStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mission_applications' }, loadStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mission_interventions' }, loadStats)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [loadStats]);
+
   const alerts: AlertItem[] = stats
     ? [
         ...(stats.missedInterventions > 0
