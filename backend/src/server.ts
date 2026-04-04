@@ -6,6 +6,7 @@ import type { Express } from "express";
 
 // Import Routes
 import exportRouter from "./routes/export.js";
+import fraudRouter from "./routes/fraud.js";
 
 // Config
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use("/api/export", exportRouter);
+app.use("/api/fraud", fraudRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

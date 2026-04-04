@@ -75,13 +75,33 @@ export default async function DashboardPage() {
 
         {/* Contenu principal — uniquement si actif */}
         {isActive && (
-          <div className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">Accès rapide</p>
+          <div className="mt-8 space-y-2">
+            <p className="text-sm font-medium text-zinc-500 mb-3">Accès rapide</p>
             <a
               href="/missions"
-              className="block rounded-lg border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 hover:border-zinc-300 transition-colors dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300"
+              className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
             >
               Voir les missions →
+            </a>
+            {role === "benevole" && (
+              <a
+                href="/benevole/mes-heures"
+                className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+              >
+                Mes heures de bénévolat →
+              </a>
+            )}
+            <a
+              href="/inbox"
+              className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+            >
+              Messagerie →
+            </a>
+            <a
+              href="/mon-compte"
+              className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+            >
+              Mon compte &amp; données →
             </a>
           </div>
         )}
@@ -89,15 +109,29 @@ export default async function DashboardPage() {
         {/* Raccourci admin */}
         {role === "admin" && (
           <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">
               Administration
             </p>
-            <a
-              href="/admin/pending-users"
-              className="mt-2 inline-block text-sm text-amber-700 underline hover:text-amber-900 dark:text-amber-300"
-            >
-              Gérer les comptes en attente →
-            </a>
+            <div className="space-y-1.5">
+              <a
+                href="/admin/dashboard"
+                className="block text-sm text-amber-700 underline hover:text-amber-900 dark:text-amber-300"
+              >
+                Tableau de bord admin →
+              </a>
+              <a
+                href="/admin/pending-users"
+                className="block text-sm text-amber-700 underline hover:text-amber-900 dark:text-amber-300"
+              >
+                Gérer les comptes en attente →
+              </a>
+              <a
+                href="/admin/audit-logs"
+                className="block text-sm text-amber-700 underline hover:text-amber-900 dark:text-amber-300"
+              >
+                Audit trail →
+              </a>
+            </div>
           </div>
         )}
 
