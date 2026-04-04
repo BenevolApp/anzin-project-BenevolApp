@@ -238,10 +238,10 @@ Les fichiers SQL sont dans `backend/prisma/policies/`. Copier-coller leur conten
 | `006_missions_policies.sql` | `missions` + `mission_schedules` | ⏳ à appliquer |
 | `007_mission_applications_policies.sql` | `mission_applications` | ⏳ à appliquer |
 | `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ⏳ à appliquer |
-| `009_mission_interventions_policies.sql` | `mission_interventions` | ⏳ à appliquer |
-| `010_pointages_policies.sql` | `pointages` | ⏳ à appliquer |
-| `011_beneficiary_qr_policies.sql` | `beneficiary_qr` | ⏳ à appliquer |
-| `012_attendance_tokens_policies.sql` | `attendance_tokens` | ⏳ à appliquer |
+| `009_mission_interventions_policies.sql` | `mission_interventions` | ✅ appliqué |
+| `010_pointages_policies.sql` | `pointages` | ✅ appliqué |
+| `011_beneficiary_qr_policies.sql` | `beneficiary_qr` | ✅ appliqué |
+| `012_attendance_tokens_policies.sql` | `attendance_tokens` | ✅ appliqué |
 
 Tables **sans policy encore** (Epic 7) : `disponibilites`, `mission_followups`, `admin_notes`, `audit_logs`.
 
