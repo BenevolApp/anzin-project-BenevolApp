@@ -258,6 +258,12 @@ export default function MissionDetailScreen() {
         {/* Actions admin */}
         {role === 'admin' && (
           <View className="mt-2 gap-2">
+            <TouchableOpacity
+              className="rounded-xl border border-zinc-300 py-3 items-center"
+              onPress={() => router.push(`/(app)/admin/missions/${id}/edit`)}
+            >
+              <Text className="text-zinc-700 text-sm font-medium">Modifier la mission</Text>
+            </TouchableOpacity>
             {mission.status === 'draft' && (
               <TouchableOpacity
                 className="rounded-xl bg-emerald-600 py-3 items-center"

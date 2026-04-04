@@ -7,6 +7,8 @@ export default function AppLayout() {
       <Stack.Screen name="missions/index" />
       <Stack.Screen name="missions/[id]" />
       <Stack.Screen name="admin/pending-users" />
+      <Stack.Screen name="admin/missions/new" />
+      <Stack.Screen name="admin/missions/[id]/edit" />
     </Stack>
   );
 }

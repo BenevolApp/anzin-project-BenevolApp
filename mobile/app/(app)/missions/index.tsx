@@ -33,6 +33,7 @@ export default function MissionsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [role, setRole] = useState<string>('benevole');
+  const isAdmin = role === 'admin';
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -72,7 +73,13 @@ export default function MissionsScreen() {
           <Text className="text-sm text-zinc-500">← Retour</Text>
         </TouchableOpacity>
         <Text className="text-base font-semibold text-zinc-900">Missions</Text>
-        <View className="w-12" />
+        {isAdmin ? (
+          <TouchableOpacity onPress={() => router.push('/(app)/admin/missions/new')}>
+            <Text className="text-sm font-medium text-zinc-900">+ Nouvelle</Text>
+          </TouchableOpacity>
+        ) : (
+          <View className="w-16" />
+        )}
       </View>
 
       {loading ? (

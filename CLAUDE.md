@@ -263,6 +263,7 @@ DIRECT_URL=postgresql://postgres.[ref]:[pwd]@aws-0-eu-west-1.pooler.supabase.com
 | Story 3.1 | Liste + détail missions (web, role-aware) | ✅ review |
 | Story 3.2 | Admin créer/éditer mission + planning (web) | ✅ review |
 | Story 3.3 | Bénévole — postuler à une mission (web) | ✅ review |
+| Story 3.2m | Admin créer/éditer mission (mobile) | ✅ review |
 | Story 3.4 | Liste + détail missions (mobile) | ✅ review |
 | Story 3.5 | Bénévole — postuler (mobile) | ✅ review |
 | Epic 4 | Présence & Pointage QR | backlog |
