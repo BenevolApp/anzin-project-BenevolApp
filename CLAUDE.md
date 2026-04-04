@@ -11,6 +11,7 @@
 2. **Après chaque `git checkout`** → relancer `pnpm install` depuis la racine (les `package.json` diffèrent entre branches).
 3. **Notes et remarques** → toujours écrire dans ce fichier (section Pièges ou Notes de session), jamais seulement dans la réponse chat.
 4. **Sync CLAUDE.md entre branches** → après toute mise à jour, propager via `git show <branche>:CLAUDE.md > CLAUDE.md` sur l'autre branche.
+5. **Push GitHub après chaque story** → commit + `git push origin <branche>` après chaque story terminée. Ne jamais grouper plusieurs stories dans un seul push.
 
 ---
 
@@ -57,10 +58,15 @@ benevolapp/
 │   │   ├── (auth)/                ← login.tsx, register.tsx
 │   │   └── (app)/                 ← index.tsx (dashboard)
 │   │       ├── missions/          ← index.tsx, [id].tsx
-│   │       └── admin/
-│   │           ├── pending-users.tsx
-│   │           └── missions/      ← new.tsx, [id]/edit.tsx, _components/
-│   ├── utils/supabase/client.ts   ← createClient + SecureStore adapter
+│   │       ├── admin/
+│   │       │   ├── pending-users.tsx
+│   │       │   ├── missions/      ← new.tsx, [id]/edit.tsx, _components/
+│   │       │   └── interventions/ ← new.tsx (admin créer intervention)
+│   │       ├── beneficiaire/      ← qr.tsx (QR permanent affiché)
+│   │       └── pointage/          ← scan.tsx, fallback.tsx, confirm.tsx
+│   ├── utils/
+│   │   ├── supabase/client.ts     ← createClient + SecureStore adapter
+│   │   └── offline-queue.ts       ← MMKV queue offline pour pointages
 │   ├── babel.config.js            ← NativeWind
 │   ├── metro.config.js            ← NativeWind
 │   └── tailwind.config.js
@@ -116,7 +122,9 @@ UI → React Hook Form (Zod) → Supabase Client → PostgreSQL (RLS) → Respon
 | BaaS | Supabase EU West (Ireland) | PostgreSQL 15 |
 | ORM | Prisma | v7.6.0 |
 | Temps réel | Supabase Realtime | prévu Epic 6 |
-| Offline mobile | react-native-mmkv | **non installé** — prévu Epic 4 |
+| Offline mobile | react-native-mmkv | ^4.3.0 ✅ installé Epic 4 |
+| QR Code | react-native-qrcode-svg | ^6.3.21 ✅ installé Epic 4 |
+| Caméra | expo-camera | ~17.0.10 ✅ installé Epic 4 |
 | Monorepo | Turborepo + pnpm | 2.5.0 / 10.33.0 |
 | TypeScript | strict | ^5 web, ~5.9 mobile |
 | CI/CD | GitHub Actions | node 24 |
@@ -220,7 +228,12 @@ feat(web): ...   feat(mobile): ...   fix(...): ...   docs(...): ...   chore(...)
 | `007_mission_applications_policies.sql` | `mission_applications` | ⏳ à appliquer |
 | `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ⏳ à appliquer |
 
-Tables **sans policy encore** (Epic 4+) : `mission_interventions`, `pointages`, `beneficiary_qr`, `attendance_tokens`, `disponibilites`, `mission_followups`, `admin_notes`, `audit_logs`.
+| `009_mission_interventions_policies.sql` | `mission_interventions` | ⏳ à appliquer |
+| `010_pointages_policies.sql` | `pointages` | ⏳ à appliquer |
+| `011_beneficiary_qr_policies.sql` | `beneficiary_qr` | ⏳ à appliquer |
+| `012_attendance_tokens_policies.sql` | `attendance_tokens` | ⏳ à appliquer |
+
+Tables **sans policy encore** (Epic 5+) : `disponibilites`, `mission_followups`, `admin_notes`, `audit_logs`.
 
 ---
 
@@ -286,7 +299,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...  ← JAMAIS côté client
 | FR-01 | Inscription & Validation (3 rôles, validation admin, RDV) | ✅ web + mobile |
 | FR-02 | Gestion missions (draft → published → completed/cancelled) | ✅ web + mobile |
 | FR-03 | Candidature & Liste d'attente (position, cascade PL/pgSQL) | ✅ postuler web+mobile / cascade backlog |
-| FR-04 | Pointage QR (offline-first MMKV, HMAC, fallback 6 chiffres) | ⏳ Epic 4 |
+| FR-04 | Pointage QR (offline-first MMKV, HMAC, fallback 6 chiffres) | ✅ mobile (build natif requis) |
 | FR-05 | Export heures (PDF/CSV horodaté pour conseiller RSA) | ⏳ Epic 5 |
 | FR-06 | Dashboard admin (alertes 🔴🟠🟡, Realtime) | ⏳ Epic 6 |
 | FR-07 | Inbox admin→user (séparée des notifs système) | ⏳ Epic 6 |
@@ -336,9 +349,20 @@ cd mobile && npx tsc --noEmit
 | Story 3.1 | Liste missions (role-aware) | ✅ | ✅ |
 | Story 3.2 | Admin créer/éditer mission + planning | ✅ | ✅ |
 | Story 3.3 | Bénévole — postuler + actions statut admin | ✅ | ✅ |
-| **Epic 4** | Présence & Pointage QR | backlog | backlog |
-| **Epic 5** | Suivi & Valorisation Heures | backlog | backlog |
-| **Epic 6** | Administration & Communication | backlog | backlog |
+| **Epic 4** | Présence & Pointage QR | backlog | ✅ mobile |
+| Story 4.1 | Génération QR bénéficiaire | — | ✅ (`beneficiaire/qr.tsx`) |
+| Story 4.2 | Admin — créer intervention planifiée | — | ✅ (`admin/interventions/new.tsx`) |
+| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | — | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
+| Story 4.4 | Confirmation pointage + file d'attente offline | — | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
+| Story 4.5 | RLS Epic 4 (interventions, pointages, qr, tokens) | — | ✅ (009–012 créés — à appliquer SQL Editor) |
+| **Epic 5** | Suivi & Valorisation Heures | backlog | ✅ mobile (CSV) |
+| Story 5.1 | Bénévole — historique heures + export CSV | — | ✅ (`benevole/mes-heures.tsx`) |
+| Story 5.2 | Backend export CSV service_role | — | ✅ (`backend/src/routes/export.ts`) |
+| Story 5.3 | Export PDF (RSA conseiller) | — | ⏳ Epic 5 suite |
+| **Epic 6** | Administration & Communication | backlog | ✅ mobile (alertes) |
+| Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | — | ✅ (`admin/dashboard.tsx`) |
+| Story 6.2 | Realtime (abonnements live) | — | ⏳ Epic 6 suite |
+| Story 6.3 | Inbox admin→user (is_human) | — | ⏳ Epic 6 suite |
 | **Epic 7** | Conformité RGPD | backlog | backlog |
 
 ---
@@ -384,40 +408,34 @@ cd mobile && npx tsc --noEmit
 - **Expo Router entry point** → `"main": "expo-router/entry"` dans `package.json` (remplace `index.ts`)
 - **`contentContainerClassName`** → utiliser sur `ScrollView` pour les classes NativeWind du container
 
+### Epic 4 — Pointage QR
+- **`expo-camera` nécessite un plugin** → `app.json` doit déclarer `["expo-camera", { ... }]` sinon crash au démarrage
+- **`react-native-mmkv`** → nécessite un build natif (incompatible Expo Go) ; utiliser `expo-dev-client` ou EAS Build
+- **Vérification HMAC** → doit se faire côté serveur (`service_role`) pour ne pas exposer la clé secrète ; le client mobile envoie le token brut
+- **`beneficiary_qr`** → le QR encode `{ beneficiary_id, token }` — le token est permanent (rotatable par admin)
+- **`attendance_tokens`** → tokens HMAC à usage unique, expiration configurable ; vérifier côté backend avant d'insérer dans `pointages`
+- **`react-native-mmkv` v4** → API changée : `MMKV` est un type uniquement. Utiliser `createMMKV({ id })` à la place de `new MMKV({ id })`
+
+### Epic 5 — Export heures
+- **`expo-file-system` + `expo-sharing`** → nécessitent un build natif (incompatible Expo Go) — même contrainte qu'expo-camera et react-native-mmkv
+- **`X-Export-Secret`** → variable d'environnement backend (`EXPORT_SECRET`) à ajouter aux secrets GitHub et dans `.env`
+- **Export CSV mobile** : les jointures Supabase imbriquées peuvent retourner des tableaux ou objets selon la query — utiliser le pattern `Array.isArray(x) ? x[0] : x` pour normaliser
+
 ### Divers
 - **`xss-clean` deprecated** → warning npm non bloquant sur le backend
 
 ---
 
-## 13. Notes de session
+## 13. Journal de développement
 
-### 2026-04-04 — Session principale
+> Le détail complet (fichiers créés/modifiés, erreurs, décisions) est dans **[`DEV_LOG.md`](./DEV_LOG.md)**.
+> Cette section ne contient que le résumé par session.
 
-**Epic 2 — Accès à la Plateforme (web + mobile)**
-- Web : middleware, auth pages (login/register/callback/signout), dashboard, admin pending-users + RDV
-- Mobile : Expo Router migration, auth screens, dashboard status-aware, admin pending-users
-- RLS : fichiers 001–005 créés
+| Date | Branche | Résumé | Statut |
+|------|---------|--------|--------|
+| 2026-04-03 | web+mobile | Fondation : monorepo, Prisma 18 tables, CI/CD, décision archi Supabase direct | ✅ |
+| 2026-04-04 S1 | web+mobile | Epic 2 (auth, dashboard) + Epic 3 (missions, candidatures) + RLS 001–008 | ✅ |
+| 2026-04-04 S2 | mobile | Epic 4 complet : scan QR, fallback, confirm, file offline MMKV, RLS 009–012, section interventions admin | ✅ |
+| 2026-04-04 S3 | mobile | Epic 5 Story 5.1+5.2 (export CSV mobile + backend) + Epic 6 Story 6.1 (dashboard admin alertes) | ✅ |
 
-**Epic 3 — Gestion des missions (web + mobile)**
-- Web : `/missions` liste, `/missions/[id]` détail, `/admin/missions/new` + `/admin/missions/[id]/edit`, bouton postuler, actions statut
-- Mobile : mêmes écrans, formulaire mission avec sélecteurs inline (pas de picker externe)
-- RLS : fichiers 006–008 créés
-
-**Décisions techniques prises :**
-- Pas de TanStack Query pour l'instant — Server Components web + useState/useEffect mobile suffisent pour les Epics 2–3
-- Pas de shadcn/ui — Tailwind pur pour garder le bundle léger
-- Formulaire mobile mission : TextInput pour les dates/heures (YYYY-MM-DD / HH:MM) plutôt qu'ajouter un date picker externe
-
-**Prochaine étape : Epic 4 — Présence & Pointage QR**
-- `react-native-mmkv` à installer sur mobile (offline-first)
-- Génération QR bénéficiaire → table `beneficiary_qr`
-- Scan QR bénévole → vérification HMAC → pointage
-- Fallback code 6 chiffres
-- RLS : `mission_interventions`, `pointages`, `beneficiary_qr`, `attendance_tokens`
-
-### 2026-04-03
-
-- Architecture Supabase Client direct décidée (vs proxy Express)
-- Schéma Prisma complet (18 modèles, 9 ENUMs) + migration initiale
-- CI/CD GitHub Actions, ESLint backend, branches git créées
-- Template RLS naming (`000_rls_naming_template.sql`)
+**Prochaine étape :** Epic 5 Story 5.3 — Export PDF RSA conseiller (backend `pdfmake`/`pdfkit`) + Epic 6 Story 6.2 — Realtime (abonnements Supabase live sur interventions + profils).
