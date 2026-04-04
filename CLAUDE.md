@@ -214,12 +214,23 @@ feat(web): ...   feat(mobile): ...   fix(...): ...   docs(...): ...   chore(...)
 
 ## 6. RLS Policies — fichiers SQL
 
-**Ordre d'application obligatoire** dans Supabase SQL Editor :
+### Procédure d'application (Supabase SQL Editor)
+
+> **Dashboard Supabase → SQL Editor → New query → coller le contenu du fichier → Run**
+> Exécuter **un fichier à la fois**, attendre `Success` avant de passer au suivant.
+
+**⚠️ RÈGLE CRITIQUE** : toujours appliquer `001` en premier (fonctions helper).
+Sans `get_my_role()` et `get_my_org_id()`, tous les autres scripts échouent avec
+`ERROR: 42883: function get_my_role() does not exist`.
+
+Les fichiers SQL sont dans `backend/prisma/policies/`. Copier-coller leur contenu directement dans le SQL Editor.
+
+### Statut d'application
 
 | Fichier | Tables couvertes | Statut |
 |---------|-----------------|--------|
 | `000_rls_naming_template.sql` | — (référence) | ✅ créé |
-| `001_rls_helper_functions.sql` | `get_my_role()`, `get_my_org_id()` SECURITY DEFINER | ⏳ à appliquer |
+| `001_rls_helper_functions.sql` | `get_my_role()`, `get_my_org_id()` SECURITY DEFINER | ✅ appliqué |
 | `002_profiles_policies.sql` | `profiles` SELECT/UPDATE own + admin | ⏳ à appliquer |
 | `003_profiles_sensitive_policies.sql` | `profiles_sensitive` SELECT own + admin | ⏳ à appliquer |
 | `004_validation_appointments_policies.sql` | SELECT own/admin, INSERT/UPDATE admin | ⏳ à appliquer |
@@ -227,13 +238,16 @@ feat(web): ...   feat(mobile): ...   fix(...): ...   docs(...): ...   chore(...)
 | `006_missions_policies.sql` | `missions` + `mission_schedules` | ⏳ à appliquer |
 | `007_mission_applications_policies.sql` | `mission_applications` | ⏳ à appliquer |
 | `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ⏳ à appliquer |
-
 | `009_mission_interventions_policies.sql` | `mission_interventions` | ⏳ à appliquer |
 | `010_pointages_policies.sql` | `pointages` | ⏳ à appliquer |
 | `011_beneficiary_qr_policies.sql` | `beneficiary_qr` | ⏳ à appliquer |
 | `012_attendance_tokens_policies.sql` | `attendance_tokens` | ⏳ à appliquer |
 
-Tables **sans policy encore** (Epic 5+) : `disponibilites`, `mission_followups`, `admin_notes`, `audit_logs`.
+Tables **sans policy encore** (Epic 7) : `disponibilites`, `mission_followups`, `admin_notes`, `audit_logs`.
+
+### Vérification après application
+Table Editor Supabase → sélectionner la table → onglet **"RLS"** → les policies doivent apparaître.
+Erreur `policy already exists` → ignorable, la policy est déjà en place.
 
 ---
 
@@ -392,7 +406,7 @@ cd mobile && npx tsc --noEmit
 - **Prisma ne gère pas le RLS** → policies en SQL brut dans `backend/prisma/policies/`, appliquées manuellement via SQL Editor
 - **Trigger `handle_new_user()`** → impossible via Prisma, créer via SQL Editor. Doit extraire `raw_user_meta_data->>'role'`, `first_name`, `last_name`
 - **Récursion RLS sur `profiles`** → utiliser `get_my_role()` et `get_my_org_id()` (SECURITY DEFINER) — jamais de `SELECT FROM profiles` dans une policy `profiles`
-- **Ordre d'application RLS** → `001` en premier (fonctions helper), puis `002`–`008` dans l'ordre
+- **Ordre d'application RLS** → `001` en premier (fonctions helper), puis les autres dans l'ordre numérique. **Sans `001`, tous les scripts échouent** avec `ERROR: 42883: function get_my_role() does not exist`
 - **Supabase region = irréversible** → EU West (Ireland) obligatoire (RGPD)
 - **ENUMs PostgreSQL** → `CREATE TYPE ... AS ENUM`, jamais inline
 - **`DATETIME` → `TIMESTAMPTZ`** → toujours avec timezone
