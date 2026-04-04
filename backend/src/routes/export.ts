@@ -1,9 +1,12 @@
 import { Router, type Request, type Response } from "express";
 import PDFDocument from "pdfkit";
-import { PrismaClient } from "../../generated/prisma/index.js";
+import { PrismaClient } from "../../generated/prisma/client.js";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const router = Router();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: process.env["DATABASE_URL"] ?? "" }),
+});
 
 // Middleware auth partagé
 function requireExportSecret(req: Request, res: Response): boolean {
@@ -42,7 +45,7 @@ router.get(
   "/heures/:benevole_id",
   async (req: Request, res: Response): Promise<void> => {
     if (!requireExportSecret(req, res)) return;
-    const { benevole_id } = req.params;
+    const benevole_id = String(req.params["benevole_id"] ?? "");
     const pointages = await fetchPointages(benevole_id);
 
     const header = "Date,Mission,Heure arrivée,Heure départ,Durée (min)";
@@ -82,7 +85,7 @@ router.get(
   "/pdf/:benevole_id",
   async (req: Request, res: Response): Promise<void> => {
     if (!requireExportSecret(req, res)) return;
-    const { benevole_id } = req.params;
+    const benevole_id = String(req.params["benevole_id"] ?? "");
     const pointages = await fetchPointages(benevole_id);
 
     const benevole_name =
