@@ -31,6 +31,8 @@
 - **`req.params` Express v5** → typé `string | string[]`, utiliser `String(req.params["param"] ?? "")` pour obtenir un `string`
 - **`req.params` avec `noUncheckedIndexedAccess`** → accès par index retourne `T | undefined`, toujours utiliser `?? ""`
 - **TS2883 "inferred type cannot be named"** → annoter explicitement la variable : `import { Router, type Router as RouterType } from "express"` puis `const router: RouterType = Router()`
+- **Vulnérabilité transitive** → utiliser `pnpm.overrides` dans le `package.json` racine pour forcer la version patchée, puis `pnpm install --no-frozen-lockfile` et committer le lockfile
+- **Checklist avant tout commit** → lancer `pnpm install --frozen-lockfile` + `tsc --noEmit` (dans le package modifié) + `pnpm audit --audit-level=high`
 
 ---
 
