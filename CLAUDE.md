@@ -30,6 +30,7 @@
 - **`new PrismaClient()`** → Prisma v7 exige un adapter : `new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env["DATABASE_URL"] ?? "" }) })`
 - **`req.params` Express v5** → typé `string | string[]`, utiliser `String(req.params["param"] ?? "")` pour obtenir un `string`
 - **`req.params` avec `noUncheckedIndexedAccess`** → accès par index retourne `T | undefined`, toujours utiliser `?? ""`
+- **TS2883 "inferred type cannot be named"** → annoter explicitement la variable : `import { Router, type Router as RouterType } from "express"` puis `const router: RouterType = Router()`
 
 ---
 
