@@ -269,6 +269,12 @@ export default function AdminDashboardScreen() {
             >
               <Text className="text-sm text-zinc-700">Créer une nouvelle mission →</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3"
+              onPress={() => router.push('/(app)/admin/proxy-beneficiaire')}
+            >
+              <Text className="text-sm text-blue-700">Comptes co-gérés (proxy) →</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       )}

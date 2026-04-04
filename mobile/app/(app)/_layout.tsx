@@ -12,6 +12,7 @@ export default function AppLayout() {
       <Stack.Screen name="admin/interventions/new" />
       <Stack.Screen name="admin/dashboard" />
       <Stack.Screen name="admin/send-message" />
+      <Stack.Screen name="admin/proxy-beneficiaire" />
       <Stack.Screen name="inbox/index" />
       <Stack.Screen name="beneficiaire/qr" />
       <Stack.Screen name="benevole/mes-heures" />
