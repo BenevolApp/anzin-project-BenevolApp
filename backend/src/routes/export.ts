@@ -1,9 +1,9 @@
-import { Router, type Request, type Response } from "express";
+import { Router, type Router as RouterType, type Request, type Response } from "express";
 import PDFDocument from "pdfkit";
 import { PrismaClient } from "../../generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const router = Router();
+const router: RouterType = Router();
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env["DATABASE_URL"] ?? "" }),
 });
