@@ -31,6 +31,22 @@ interface Mission {
   schedules: Schedule[];
 }
 
+interface Intervention {
+  id: string;
+  scheduled_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  status: string;
+  benevole: { first_name: string | null } | null;
+  pointage: { check_in_time: string | null; check_out_time: string | null } | null;
+}
+
+const INTERVENTION_STATUS: Record<string, { label: string; dot: string }> = {
+  planned: { label: 'Planifiée', dot: 'bg-amber-400' },
+  done: { label: 'Effectuée', dot: 'bg-emerald-500' },
+  missed: { label: 'Manquée', dot: 'bg-red-400' },
+};
+
 const STATUS_LABELS: Record<string, { label: string; bg: string; text: string }> = {
   draft: { label: 'Brouillon', bg: 'bg-zinc-100', text: 'text-zinc-600' },
   published: { label: 'Publiée', bg: 'bg-emerald-100', text: 'text-emerald-700' },
@@ -59,17 +75,34 @@ export default function MissionDetailScreen() {
   const [alreadyApplied, setAlreadyApplied] = useState(false);
   const [applicationCount, setApplicationCount] = useState(0);
   const [applyLoading, setApplyLoading] = useState(false);
+  const [interventions, setInterventions] = useState<Intervention[]>([]);
 
   useEffect(() => {
     if (!id) return;
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
-        setRole((user.user_metadata?.role as string | undefined) ?? 'benevole');
+        const r = (user.user_metadata?.role as string | undefined) ?? 'benevole';
+        setRole(r);
+        if (r === 'admin') fetchInterventions();
       }
     });
     fetchMission();
   }, [id]);
+
+  async function fetchInterventions() {
+    const { data } = await supabase
+      .from('mission_interventions')
+      .select(`
+        id, scheduled_date, start_time, end_time, status,
+        benevole:profiles!mission_interventions_benevole_id_fkey(first_name),
+        pointage:pointages(check_in_time, check_out_time)
+      `)
+      .eq('mission_id', id)
+      .order('scheduled_date', { ascending: true });
+
+    setInterventions(data as unknown as Intervention[]);
+  }
 
   async function fetchMission() {
     const { data } = await supabase
@@ -251,6 +284,76 @@ export default function MissionDetailScreen() {
                   </Text>
                 )}
               </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {/* Section interventions — admin */}
+        {role === 'admin' && (
+          <View className="mt-6 mb-2">
+            <View className="flex-row items-center justify-between mb-3">
+              <Text className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
+                Interventions ({interventions.length})
+              </Text>
+              {mission.status === 'published' && (
+                <TouchableOpacity
+                  className="rounded-full bg-zinc-900 px-3 py-1"
+                  onPress={() =>
+                    router.push(`/(app)/admin/interventions/new?mission_id=${id}`)
+                  }
+                >
+                  <Text className="text-white text-xs font-medium">+ Planifier</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {interventions.length === 0 ? (
+              <View className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                <Text className="text-sm text-zinc-400">
+                  Aucune intervention planifiée pour cette mission.
+                </Text>
+              </View>
+            ) : (
+              <View className="gap-2">
+                {interventions.map((iv) => {
+                  const benevole = Array.isArray(iv.benevole) ? iv.benevole[0] : iv.benevole;
+                  const pointage = Array.isArray(iv.pointage) ? iv.pointage[0] : iv.pointage;
+                  const ivStatus = INTERVENTION_STATUS[iv.status] ?? { label: iv.status, dot: 'bg-zinc-400' };
+                  const dateStr = new Date(iv.scheduled_date).toLocaleDateString('fr-FR', {
+                    weekday: 'short', day: 'numeric', month: 'short',
+                  });
+                  return (
+                    <View
+                      key={iv.id}
+                      className="rounded-xl border border-zinc-200 bg-white px-4 py-3 gap-1"
+                    >
+                      <View className="flex-row items-center justify-between">
+                        <Text className="text-sm font-medium text-zinc-800 capitalize">{dateStr}</Text>
+                        <View className="flex-row items-center gap-1.5">
+                          <View className={`w-2 h-2 rounded-full ${ivStatus.dot}`} />
+                          <Text className="text-xs text-zinc-500">{ivStatus.label}</Text>
+                        </View>
+                      </View>
+                      {benevole?.first_name && (
+                        <Text className="text-xs text-zinc-500">Bénévole : {benevole.first_name}</Text>
+                      )}
+                      {iv.start_time && iv.end_time && (
+                        <Text className="text-xs text-zinc-400">
+                          {iv.start_time.slice(0, 5)} – {iv.end_time.slice(0, 5)}
+                        </Text>
+                      )}
+                      {pointage?.check_in_time && (
+                        <Text className="text-xs text-emerald-600">
+                          Check-in : {new Date(pointage.check_in_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                          {pointage.check_out_time
+                            ? ` — Check-out : ${new Date(pointage.check_out_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+                            : ''}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
             )}
           </View>
         )}
