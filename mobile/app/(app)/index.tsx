@@ -84,10 +84,14 @@ export default function DashboardScreen() {
 
         {/* Contenu principal — uniquement si actif */}
         {isActive && (
-          <View className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
-            <Text className="text-sm text-zinc-500">
-              Tableau de bord en cours de construction — Epic 3 à venir.
-            </Text>
+          <View className="mt-8 rounded-2xl border border-zinc-200 bg-white p-5">
+            <Text className="text-sm font-medium text-zinc-700 mb-3">Accès rapide</Text>
+            <TouchableOpacity
+              className="rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3"
+              onPress={() => router.push('/(app)/missions')}
+            >
+              <Text className="text-sm text-zinc-700">Voir les missions →</Text>
+            </TouchableOpacity>
           </View>
         )}
 
