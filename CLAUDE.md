@@ -388,21 +388,21 @@ cd mobile && npx tsc --noEmit
 | Story 3.1 | Liste missions (role-aware) | ✅ | ✅ |
 | Story 3.2 | Admin créer/éditer mission + planning | ✅ | ✅ |
 | Story 3.3 | Bénévole — postuler + actions statut admin | ✅ | ✅ |
-| **Epic 4** | Présence & Pointage QR | backlog | ✅ mobile |
+| **Epic 4** | Présence & Pointage QR | ⏳ web partiel | ✅ mobile |
 | Story 4.1 | Génération QR bénéficiaire | — | ✅ (`beneficiaire/qr.tsx`) |
-| Story 4.2 | Admin — créer intervention planifiée | — | ✅ (`admin/interventions/new.tsx`) |
-| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | — | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
-| Story 4.4 | Confirmation pointage + file d'attente offline | — | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
+| Story 4.2 | Admin — créer intervention planifiée | ✅ (`admin/interventions/new/`) | ✅ (`admin/interventions/new.tsx`) |
+| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | — (caméra mobile uniquement) | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
+| Story 4.4 | Confirmation pointage + file d'attente offline | — (mobile uniquement) | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
 | Story 4.5 | RLS Epic 4 (interventions, pointages, qr, tokens) | — | ✅ (009–012 créés — à appliquer SQL Editor) |
 | **Epic 5** | Suivi & Valorisation Heures | ⏳ web partiel | ✅ mobile (CSV) |
 | Story 5.1 | Bénévole — historique heures + export CSV | ✅ (`benevole/mes-heures/`) | ✅ (`benevole/mes-heures.tsx`) |
 | Story 5.2 | Backend export CSV service_role | — | ✅ (`backend/src/routes/export.ts`) |
 | Story 5.3 | Export PDF (RSA conseiller) | ⏳ | ⏳ |
-| **Epic 6** | Administration & Communication | ⏳ web partiel | ✅ mobile |
+| **Epic 6** | Administration & Communication | ✅ web | ✅ mobile |
 | Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | ✅ (`admin/dashboard/`) | ✅ (`admin/dashboard.tsx`) |
 | Story 6.2 | Realtime (abonnements live) | ✅ (dans `dashboard-stats.tsx`) | ✅ (dashboard auto-refresh) |
-| Story 6.3 | Inbox admin→user (is_human) | ⏳ | ✅ (`inbox/`, `admin/send-message.tsx`) |
-| Story 6.4 | Compte co-géré (proxy admin) | ⏳ | ✅ (`admin/proxy-beneficiaire.tsx`) |
+| Story 6.3 | Inbox admin→user (is_human) | ✅ (`inbox/`, `admin/envoyer-message/`) | ✅ (`inbox/`, `admin/send-message.tsx`) |
+| Story 6.4 | Compte co-géré (proxy admin) | ✅ (`admin/proxy-beneficiaire/`) | ✅ (`admin/proxy-beneficiaire.tsx`) |
 | **Epic 7** | Conformité RGPD | backlog | backlog |
 
 ---
@@ -481,4 +481,6 @@ cd mobile && npx tsc --noEmit
 
 | 2026-04-05 | web | Epic 5.1 (mes-heures + export CSV) + Epic 6.1 (dashboard admin alertes + Realtime) | ✅ |
 
-**Prochaine étape web :** Story 6.3 (Inbox) + Story 6.4 (Proxy admin) + Story 4.2 (Interventions admin web).
+| 2026-04-05 S2 | web | Epic 6.3 (inbox + envoi message) + 6.4 (proxy bénéficiaire) + 4.2 (planifier intervention) | ✅ |
+
+**Prochaine étape :** Story 5.3 (PDF export web) + Epic 7 RGPD.
