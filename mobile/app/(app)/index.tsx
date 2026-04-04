@@ -84,14 +84,43 @@ export default function DashboardScreen() {
 
         {/* Contenu principal — uniquement si actif */}
         {isActive && (
-          <View className="mt-8 rounded-2xl border border-zinc-200 bg-white p-5">
-            <Text className="text-sm font-medium text-zinc-700 mb-3">Accès rapide</Text>
+          <View className="mt-8 rounded-2xl border border-zinc-200 bg-white p-5 gap-2">
+            <Text className="text-sm font-medium text-zinc-700 mb-1">Accès rapide</Text>
+
             <TouchableOpacity
               className="rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3"
               onPress={() => router.push('/(app)/missions')}
             >
               <Text className="text-sm text-zinc-700">Voir les missions →</Text>
             </TouchableOpacity>
+
+            {/* Bénévole : scanner + mes heures */}
+            {role === 'benevole' && (
+              <>
+                <TouchableOpacity
+                  className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3"
+                  onPress={() => router.push('/(app)/pointage/scan')}
+                >
+                  <Text className="text-sm font-medium text-emerald-800">Scanner le QR de pointage →</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3"
+                  onPress={() => router.push('/(app)/benevole/mes-heures')}
+                >
+                  <Text className="text-sm text-zinc-700">Mes heures de bénévolat →</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {/* Bénéficiaire : afficher son QR */}
+            {role === 'beneficiaire' && (
+              <TouchableOpacity
+                className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3"
+                onPress={() => router.push('/(app)/beneficiaire/qr')}
+              >
+                <Text className="text-sm font-medium text-blue-800">Mon QR de pointage →</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
@@ -99,11 +128,11 @@ export default function DashboardScreen() {
         {role === 'admin' && (
           <TouchableOpacity
             className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4"
-            onPress={() => router.push('/(app)/admin/pending-users')}
+            onPress={() => router.push('/(app)/admin/dashboard')}
           >
             <Text className="text-sm font-medium text-amber-800">Administration</Text>
             <Text className="text-sm text-amber-700 mt-1">
-              Gérer les comptes en attente →
+              Tableau de bord — alertes & actions →
             </Text>
           </TouchableOpacity>
         )}
