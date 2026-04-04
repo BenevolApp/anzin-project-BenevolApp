@@ -361,8 +361,9 @@ cd mobile && npx tsc --noEmit
 | Story 5.3 | Export PDF (RSA conseiller) | — | ⏳ Epic 5 suite |
 | **Epic 6** | Administration & Communication | backlog | ✅ mobile (alertes) |
 | Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | — | ✅ (`admin/dashboard.tsx`) |
-| Story 6.2 | Realtime (abonnements live) | — | ⏳ Epic 6 suite |
-| Story 6.3 | Inbox admin→user (is_human) | — | ⏳ Epic 6 suite |
+| Story 6.2 | Realtime (abonnements live) | — | ✅ (dashboard auto-refresh) |
+| Story 6.3 | Inbox admin→user (is_human) | — | ✅ (`inbox/`, `admin/send-message.tsx`) |
+| Story 6.4 | Compte co-géré (proxy admin) | — | ✅ (`admin/proxy-beneficiaire.tsx`) |
 | **Epic 7** | Conformité RGPD | backlog | backlog |
 
 ---
@@ -438,4 +439,4 @@ cd mobile && npx tsc --noEmit
 | 2026-04-04 S2 | mobile | Epic 4 complet : scan QR, fallback, confirm, file offline MMKV, RLS 009–012, section interventions admin | ✅ |
 | 2026-04-04 S3 | mobile | Epic 5 Story 5.1+5.2 (export CSV mobile + backend) + Epic 6 Story 6.1 (dashboard admin alertes) | ✅ |
 
-**Prochaine étape :** Epic 5 Story 5.3 — Export PDF RSA conseiller (backend `pdfmake`/`pdfkit`) + Epic 6 Story 6.2 — Realtime (abonnements Supabase live sur interventions + profils).
+**Prochaine étape :** Epic 7 — RGPD (export données, anonymisation, audit trail) + anti-fraude HMAC Epic 7.

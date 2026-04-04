@@ -189,6 +189,40 @@
 
 #### Prochaine étape
 - [ ] Appliquer RLS 009–012 dans Supabase SQL Editor
-- [ ] Epic 5 suite : export PDF (ex. `react-pdf` ou `pdfmake` côté backend)
-- [ ] Epic 6 suite : Supabase Realtime — abonnement temps réel sur `mission_interventions` + `profiles` pour le dashboard admin
+- [ ] Epic 7 : RGPD (export données, anonymisation, audit trail)
 - [ ] Epic 7 : HMAC verification backend + anti-fraude
+- [ ] Backend : ajouter EXPORT_SECRET + EXPO_PUBLIC_BACKEND_URL dans les envs
+
+---
+
+## 2026-04-04 — Epic 5.3 + Epic 6.2/6.3/6.4
+
+**Branche :** mobile
+**Statut :** terminé
+
+#### Fichiers créés
+- `mobile/app/(app)/inbox/index.tsx` — messagerie humaine (is_human=true), badge non-lu, mark-as-read auto
+- `mobile/app/(app)/admin/send-message.tsx` — formulaire admin envoi message à un utilisateur
+- `mobile/app/(app)/admin/proxy-beneficiaire.tsx` — liste proxy + assign/retire + audit_logs
+- `backend/src/routes/export.ts` — ajout route PDF (pdfkit, A4, tableau interventions, total)
+
+#### Fichiers modifiés
+- `mobile/app/(app)/admin/dashboard.tsx` — Realtime 3 tables + raccourci proxy
+- `mobile/app/(app)/admin/pending-users.tsx` — bouton "Envoyer un message"
+- `mobile/app/(app)/benevole/mes-heures.tsx` — bouton "Attestation PDF"
+- `mobile/app/(app)/index.tsx` — bouton Messagerie + badge non-lu
+- `mobile/app/(app)/_layout.tsx` — routes send-message, inbox, proxy-beneficiaire
+- `backend/package.json` — ajout pdfkit + @types/pdfkit
+
+#### Décisions techniques
+- Story 6.2 Realtime : 3 canaux Supabase (`profiles`, `mission_applications`, `mission_interventions`) dans un seul `channel()` — un seul `removeChannel` au cleanup
+- Story 6.3 Inbox : mark-as-read en masse au montage du composant (UX simple)
+- Story 6.4 Proxy : chaque assign/remove tracé dans `audit_logs` pour conformité RGPD
+- Story 5.3 PDF : pdfkit avec layout manuel (colX array) — pas de lib table pour réduire les dépendances
+- `EXPO_PUBLIC_EXPORT_SECRET` : exposé côté mobile uniquement pour MVP ; en prod, l'appel PDF devrait passer par un endpoint authentifié JWT Supabase
+
+#### Prochaine étape
+- [ ] Epic 7 : RGPD — export données personnelles, anonymisation, audit trail
+- [ ] Anti-fraude HMAC : endpoint `POST /api/pointage/verify`
+- [ ] Ajouter `EXPO_PUBLIC_BACKEND_URL` + `EXPO_PUBLIC_EXPORT_SECRET` dans `mobile/.env`
+- [ ] Ajouter `EXPORT_SECRET` dans `.env` backend + secrets GitHub
