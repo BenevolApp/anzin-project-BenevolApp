@@ -97,6 +97,12 @@ export default async function DashboardPage() {
             >
               Messagerie →
             </a>
+            <a
+              href="/mon-compte"
+              className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+            >
+              Mon compte &amp; données →
+            </a>
           </div>
         )}
 
@@ -118,6 +124,12 @@ export default async function DashboardPage() {
                 className="block text-sm text-amber-700 underline hover:text-amber-900 dark:text-amber-300"
               >
                 Gérer les comptes en attente →
+              </a>
+              <a
+                href="/admin/audit-logs"
+                className="block text-sm text-amber-700 underline hover:text-amber-900 dark:text-amber-300"
+              >
+                Audit trail →
               </a>
             </div>
           </div>
