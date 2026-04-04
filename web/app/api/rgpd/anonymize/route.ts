@@ -53,10 +53,10 @@ export async function POST() {
 
   // 3. Tracer dans audit_logs
   await adminClient.from("audit_logs").insert({
-    actor_id: userId,
+    user_id: userId,
     action: "account_anonymized",
-    target_type: "profile",
-    target_id: userId,
+    entity_type: "profile",
+    entity_id: userId,
     metadata: { requested_by: "user", rgpd: true },
   });
 

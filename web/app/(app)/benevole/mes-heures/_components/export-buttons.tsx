@@ -56,16 +56,7 @@ export function ExportButtons({ pointages, benevoleId }: ExportButtonsProps) {
   }
 
   function handleExportPdf() {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3000";
-    const secret = process.env.NEXT_PUBLIC_EXPORT_SECRET ?? "";
-    if (!secret) {
-      alert("Export PDF non configuré (NEXT_PUBLIC_EXPORT_SECRET manquant).");
-      return;
-    }
-    // Ouvre le PDF dans un nouvel onglet via fetch avec le header secret
-    fetch(`${backendUrl}/api/export/pdf/${benevoleId}`, {
-      headers: { "x-export-secret": secret },
-    })
+    fetch(`/api/export/pdf/${benevoleId}`)
       .then((res) => {
         if (!res.ok) throw new Error("Erreur serveur");
         return res.blob();
@@ -78,7 +69,7 @@ export function ExportButtons({ pointages, benevoleId }: ExportButtonsProps) {
         a.click();
         URL.revokeObjectURL(url);
       })
-      .catch(() => alert("Impossible de contacter le serveur backend."));
+      .catch(() => alert("Impossible de générer l'attestation PDF."));
   }
 
   return (

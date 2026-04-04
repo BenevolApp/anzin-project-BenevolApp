@@ -18,7 +18,7 @@ export default async function AuditLogsPage() {
 
   const { data: logs } = await supabase
     .from("audit_logs")
-    .select("id, actor_id, action, target_type, target_id, metadata, created_at")
+    .select("id, user_id, action, entity_type, entity_id, metadata, created_at")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -66,15 +66,15 @@ export default async function AuditLogsPage() {
                       {ACTION_LABELS[log.action] ?? log.action}
                     </td>
                     <td className="px-4 py-3 text-zinc-500 font-mono text-xs">
-                      {log.target_type && (
+                      {log.entity_type && (
                         <span className="mr-1 rounded bg-zinc-100 dark:bg-zinc-700 px-1.5 py-0.5">
-                          {log.target_type}
+                          {log.entity_type}
                         </span>
                       )}
-                      {log.target_id ? log.target_id.slice(0, 8) + "…" : "—"}
+                      {log.entity_id ? log.entity_id.slice(0, 8) + "…" : "—"}
                     </td>
                     <td className="px-4 py-3 text-zinc-500 font-mono text-xs">
-                      {log.actor_id ? log.actor_id.slice(0, 8) + "…" : "—"}
+                      {log.user_id ? log.user_id.slice(0, 8) + "…" : "—"}
                     </td>
                   </tr>
                 ))}
