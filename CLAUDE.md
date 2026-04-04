@@ -11,7 +11,7 @@
 2. **Après chaque `git checkout`** → relancer `pnpm install` depuis la racine (les `package.json` diffèrent entre branches).
 3. **Notes et remarques** → toujours écrire dans ce fichier (section Pièges ou Notes de session), jamais seulement dans la réponse chat.
 4. **Sync CLAUDE.md entre branches** → après toute mise à jour, propager via `git show <branche>:CLAUDE.md > CLAUDE.md` sur l'autre branche.
-5. **Push GitHub après chaque story** → commit + `git push origin <branche>` après chaque story terminée. Ne jamais grouper plusieurs stories dans un seul push.
+5. **Push GitHub après chaque story ET chaque correction** → commit + `git push origin <branche>` après chaque story terminée ET après chaque bug fix / correction de problème. Ne jamais laisser de commits locaux sans push.
 
 ---
 
