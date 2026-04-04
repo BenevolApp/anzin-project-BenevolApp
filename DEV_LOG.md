@@ -188,10 +188,41 @@
 - `X-Export-Secret` doit être ajouté aux secrets GitHub et dans `.env` backend
 
 #### Prochaine étape
-- [ ] Appliquer RLS 009–012 dans Supabase SQL Editor
+- [x] Appliquer RLS 001 dans Supabase SQL Editor ✅
+- [x] Appliquer RLS 009–012 dans Supabase SQL Editor ✅
+- [x] Configurer mobile/.env (EXPO_PUBLIC_BACKEND_URL, EXPO_PUBLIC_EXPORT_SECRET) ✅
+- [x] Configurer backend/.env (EXPORT_SECRET, PORT sans espaces) ✅
+- [ ] **Appliquer RLS 002–008 dans Supabase SQL Editor** (ordre : 002→003→004→005→006→007→008)
 - [ ] Epic 7 : RGPD (export données, anonymisation, audit trail)
 - [ ] Epic 7 : HMAC verification backend + anti-fraude
-- [ ] Backend : ajouter EXPORT_SECRET + EXPO_PUBLIC_BACKEND_URL dans les envs
+
+---
+
+## 2026-04-04 — Configuration Supabase RLS + .env
+
+**Branche :** mobile
+**Statut :** terminé
+
+#### Actions effectuées
+- `001_rls_helper_functions.sql` appliqué dans Supabase SQL Editor → `get_my_role()` et `get_my_org_id()` créées
+- `009` → `010` → `011` → `012` appliqués dans Supabase SQL Editor ✅
+- `mobile/.env` créé : `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_BACKEND_URL=http://localhost:3000`, `EXPO_PUBLIC_EXPORT_SECRET`
+- `backend/.env` corrigé : `PORT=3000` (suppression espaces), `EXPORT_SECRET` identique au mobile
+
+#### Piège rencontré
+- **`ERROR: 42883: function get_my_role() does not exist`** → il faut toujours appliquer `001` avant tout autre script RLS
+- **Espaces dans .env** (`PORT = 3000`, `KEY  = value`) → dotenv ne parse pas les espaces autour du `=` → toujours `KEY=value` sans espaces
+
+#### Ce qui reste à faire (priorité haute)
+- **RLS 002–008 à appliquer** dans Supabase SQL Editor — sans eux, les tables `profiles`, `missions`, `notifications`, etc. sont sans protection RLS
+- Procédure : SQL Editor → New query → coller contenu du fichier → Run → attendre Success → suivant
+- Fichiers dans `backend/prisma/policies/` : `002_profiles_policies.sql` → `003` → `004` → `005` → `006` → `007` → `008`
+
+#### Note importante — Prisma schema ≠ SQL Editor
+- Le fichier `backend/prisma/schema.prisma` est le DSL Prisma, **pas du SQL**
+- Ne jamais le coller dans le SQL Editor Supabase
+- Les tables existent déjà en base (créées via `prisma migrate deploy` ou `prisma db push`)
+- Le SQL Editor ne sert qu'aux RLS policies, triggers, et fonctions custom
 
 ---
 
