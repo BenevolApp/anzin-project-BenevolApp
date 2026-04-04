@@ -339,12 +339,12 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...  ← JAMAIS côté client
 | FR-02 | Gestion missions (draft → published → completed/cancelled) | ✅ web + mobile |
 | FR-03 | Candidature & Liste d'attente (position, cascade PL/pgSQL) | ✅ postuler web+mobile / cascade backlog |
 | FR-04 | Pointage QR (offline-first MMKV, HMAC, fallback 6 chiffres) | ✅ mobile (build natif requis) |
-| FR-05 | Export heures (PDF/CSV horodaté pour conseiller RSA) | ⏳ Epic 5 |
+| FR-05 | Export heures (PDF/CSV horodaté pour conseiller RSA) | ✅ web + mobile |
 | FR-06 | Dashboard admin (alertes 🔴🟠🟡, Realtime) | ⏳ Epic 6 |
 | FR-07 | Inbox admin→user (séparée des notifs système) | ⏳ Epic 6 |
 | FR-08 | Compte co-géré (proxy admin, accès dual, logs) | ⏳ Epic 6 |
 | FR-09 | RGPD (export, anonymisation, audit trail) | ✅ web |
-| FR-10 | Anti-fraude (device fingerprint, IP, flagging async) | ⏳ Epic 7 |
+| FR-10 | Anti-fraude (device fingerprint, IP, flagging async) | ✅ backend (`/api/fraud/check`) |
 
 ---
 
@@ -397,7 +397,7 @@ cd mobile && npx tsc --noEmit
 | **Epic 5** | Suivi & Valorisation Heures | ⏳ web partiel | ✅ mobile (CSV) |
 | Story 5.1 | Bénévole — historique heures + export CSV | ✅ (`benevole/mes-heures/`) | ✅ (`benevole/mes-heures.tsx`) |
 | Story 5.2 | Backend export CSV service_role | — | ✅ (`backend/src/routes/export.ts`) |
-| Story 5.3 | Export PDF (RSA conseiller) | ⏳ | ⏳ |
+| Story 5.3 | Export PDF (RSA conseiller) | ✅ (`api/export/pdf/[benevoleId]/`) | ✅ (`benevole/mes-heures.tsx`) |
 | **Epic 6** | Administration & Communication | ✅ web | ✅ mobile |
 | Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | ✅ (`admin/dashboard/`) | ✅ (`admin/dashboard.tsx`) |
 | Story 6.2 | Realtime (abonnements live) | ✅ (dans `dashboard-stats.tsx`) | ✅ (dashboard auto-refresh) |
@@ -487,4 +487,6 @@ cd mobile && npx tsc --noEmit
 | 2026-04-05 S2 | web | Epic 6.3 (inbox + envoi message) + 6.4 (proxy bénéficiaire) + 4.2 (planifier intervention) | ✅ |
 | 2026-04-05 S3 | web | Epic 7 RGPD : export données JSON, droit à l'oubli (anonymize route), audit trail admin | ✅ |
 
-**Prochaine étape :** Story 5.3 (PDF export web) + Epic 7 RGPD côté mobile (backlog).
+| 2026-04-05 S4 | web+mobile | Story 5.3 PDF export sécurisé (proxy Next.js) + FR-10 anti-fraude async backend | ✅ |
+
+**Prochaine étape :** RLS 002–008 à appliquer en SQL Editor (bloquant pour la prod) + Epic 7 RGPD côté mobile (backlog).
