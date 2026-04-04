@@ -339,12 +339,12 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...  ← JAMAIS côté client
 | FR-02 | Gestion missions (draft → published → completed/cancelled) | ✅ web + mobile |
 | FR-03 | Candidature & Liste d'attente (position, cascade PL/pgSQL) | ✅ postuler web+mobile / cascade backlog |
 | FR-04 | Pointage QR (offline-first MMKV, HMAC, fallback 6 chiffres) | ✅ mobile (build natif requis) |
-| FR-05 | Export heures (PDF/CSV horodaté pour conseiller RSA) | ⏳ Epic 5 |
+| FR-05 | Export heures (PDF/CSV horodaté pour conseiller RSA) | ✅ web + mobile |
 | FR-06 | Dashboard admin (alertes 🔴🟠🟡, Realtime) | ⏳ Epic 6 |
 | FR-07 | Inbox admin→user (séparée des notifs système) | ⏳ Epic 6 |
 | FR-08 | Compte co-géré (proxy admin, accès dual, logs) | ⏳ Epic 6 |
-| FR-09 | RGPD (export, anonymisation, audit trail) | ⏳ Epic 7 |
-| FR-10 | Anti-fraude (device fingerprint, IP, flagging async) | ⏳ Epic 7 |
+| FR-09 | RGPD (export, anonymisation, audit trail) | ✅ web |
+| FR-10 | Anti-fraude (device fingerprint, IP, flagging async) | ✅ backend (`/api/fraud/check`) |
 
 ---
 
@@ -388,22 +388,25 @@ cd mobile && npx tsc --noEmit
 | Story 3.1 | Liste missions (role-aware) | ✅ | ✅ |
 | Story 3.2 | Admin créer/éditer mission + planning | ✅ | ✅ |
 | Story 3.3 | Bénévole — postuler + actions statut admin | ✅ | ✅ |
-| **Epic 4** | Présence & Pointage QR | backlog | ✅ mobile |
+| **Epic 4** | Présence & Pointage QR | ⏳ web partiel | ✅ mobile |
 | Story 4.1 | Génération QR bénéficiaire | — | ✅ (`beneficiaire/qr.tsx`) |
-| Story 4.2 | Admin — créer intervention planifiée | — | ✅ (`admin/interventions/new.tsx`) |
-| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | — | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
-| Story 4.4 | Confirmation pointage + file d'attente offline | — | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
+| Story 4.2 | Admin — créer intervention planifiée | ✅ (`admin/interventions/new/`) | ✅ (`admin/interventions/new.tsx`) |
+| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | — (caméra mobile uniquement) | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
+| Story 4.4 | Confirmation pointage + file d'attente offline | — (mobile uniquement) | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
 | Story 4.5 | RLS Epic 4 (interventions, pointages, qr, tokens) | — | ✅ (009–012 créés — à appliquer SQL Editor) |
-| **Epic 5** | Suivi & Valorisation Heures | backlog | ✅ mobile (CSV) |
-| Story 5.1 | Bénévole — historique heures + export CSV | — | ✅ (`benevole/mes-heures.tsx`) |
+| **Epic 5** | Suivi & Valorisation Heures | ⏳ web partiel | ✅ mobile (CSV) |
+| Story 5.1 | Bénévole — historique heures + export CSV | ✅ (`benevole/mes-heures/`) | ✅ (`benevole/mes-heures.tsx`) |
 | Story 5.2 | Backend export CSV service_role | — | ✅ (`backend/src/routes/export.ts`) |
-| Story 5.3 | Export PDF (RSA conseiller) | — | ⏳ Epic 5 suite |
-| **Epic 6** | Administration & Communication | backlog | ✅ mobile (alertes) |
-| Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | — | ✅ (`admin/dashboard.tsx`) |
-| Story 6.2 | Realtime (abonnements live) | — | ✅ (dashboard auto-refresh) |
-| Story 6.3 | Inbox admin→user (is_human) | — | ✅ (`inbox/`, `admin/send-message.tsx`) |
-| Story 6.4 | Compte co-géré (proxy admin) | — | ✅ (`admin/proxy-beneficiaire.tsx`) |
-| **Epic 7** | Conformité RGPD | backlog | backlog |
+| Story 5.3 | Export PDF (RSA conseiller) | ✅ (`api/export/pdf/[benevoleId]/`) | ✅ (`benevole/mes-heures.tsx`) |
+| **Epic 6** | Administration & Communication | ✅ web | ✅ mobile |
+| Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | ✅ (`admin/dashboard/`) | ✅ (`admin/dashboard.tsx`) |
+| Story 6.2 | Realtime (abonnements live) | ✅ (dans `dashboard-stats.tsx`) | ✅ (dashboard auto-refresh) |
+| Story 6.3 | Inbox admin→user (is_human) | ✅ (`inbox/`, `admin/envoyer-message/`) | ✅ (`inbox/`, `admin/send-message.tsx`) |
+| Story 6.4 | Compte co-géré (proxy admin) | ✅ (`admin/proxy-beneficiaire/`) | ✅ (`admin/proxy-beneficiaire.tsx`) |
+| **Epic 7** | Conformité RGPD | ✅ web | backlog |
+| Story 7.1 | Export données perso (JSON) | ✅ (`mon-compte/export-donnees/`) | — |
+| Story 7.2 | Droit à l'oubli (anonymisation + suppression) | ✅ (`api/rgpd/anonymize/`) | — |
+| Story 7.3 | Audit trail admin | ✅ (`admin/audit-logs/`) | — |
 
 ---
 
@@ -479,4 +482,11 @@ cd mobile && npx tsc --noEmit
 | 2026-04-04 S2 | mobile | Epic 4 complet : scan QR, fallback, confirm, file offline MMKV, RLS 009–012, section interventions admin | ✅ |
 | 2026-04-04 S3 | mobile | Epic 5 Story 5.1+5.2 (export CSV mobile + backend) + Epic 6 Story 6.1 (dashboard admin alertes) | ✅ |
 
-**Prochaine étape :** Epic 7 — RGPD (export données, anonymisation, audit trail) + anti-fraude HMAC Epic 7.
+| 2026-04-05 | web | Epic 5.1 (mes-heures + export CSV) + Epic 6.1 (dashboard admin alertes + Realtime) | ✅ |
+
+| 2026-04-05 S2 | web | Epic 6.3 (inbox + envoi message) + 6.4 (proxy bénéficiaire) + 4.2 (planifier intervention) | ✅ |
+| 2026-04-05 S3 | web | Epic 7 RGPD : export données JSON, droit à l'oubli (anonymize route), audit trail admin | ✅ |
+
+| 2026-04-05 S4 | web+mobile | Story 5.3 PDF export sécurisé (proxy Next.js) + FR-10 anti-fraude async backend | ✅ |
+
+**Prochaine étape :** RLS 002–008 à appliquer en SQL Editor (bloquant pour la prod) + Epic 7 RGPD côté mobile (backlog).
