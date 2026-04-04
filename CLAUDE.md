@@ -343,7 +343,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...  ← JAMAIS côté client
 | FR-06 | Dashboard admin (alertes 🔴🟠🟡, Realtime) | ⏳ Epic 6 |
 | FR-07 | Inbox admin→user (séparée des notifs système) | ⏳ Epic 6 |
 | FR-08 | Compte co-géré (proxy admin, accès dual, logs) | ⏳ Epic 6 |
-| FR-09 | RGPD (export, anonymisation, audit trail) | ⏳ Epic 7 |
+| FR-09 | RGPD (export, anonymisation, audit trail) | ✅ web |
 | FR-10 | Anti-fraude (device fingerprint, IP, flagging async) | ⏳ Epic 7 |
 
 ---
@@ -403,7 +403,10 @@ cd mobile && npx tsc --noEmit
 | Story 6.2 | Realtime (abonnements live) | ✅ (dans `dashboard-stats.tsx`) | ✅ (dashboard auto-refresh) |
 | Story 6.3 | Inbox admin→user (is_human) | ✅ (`inbox/`, `admin/envoyer-message/`) | ✅ (`inbox/`, `admin/send-message.tsx`) |
 | Story 6.4 | Compte co-géré (proxy admin) | ✅ (`admin/proxy-beneficiaire/`) | ✅ (`admin/proxy-beneficiaire.tsx`) |
-| **Epic 7** | Conformité RGPD | backlog | backlog |
+| **Epic 7** | Conformité RGPD | ✅ web | backlog |
+| Story 7.1 | Export données perso (JSON) | ✅ (`mon-compte/export-donnees/`) | — |
+| Story 7.2 | Droit à l'oubli (anonymisation + suppression) | ✅ (`api/rgpd/anonymize/`) | — |
+| Story 7.3 | Audit trail admin | ✅ (`admin/audit-logs/`) | — |
 
 ---
 
@@ -482,5 +485,6 @@ cd mobile && npx tsc --noEmit
 | 2026-04-05 | web | Epic 5.1 (mes-heures + export CSV) + Epic 6.1 (dashboard admin alertes + Realtime) | ✅ |
 
 | 2026-04-05 S2 | web | Epic 6.3 (inbox + envoi message) + 6.4 (proxy bénéficiaire) + 4.2 (planifier intervention) | ✅ |
+| 2026-04-05 S3 | web | Epic 7 RGPD : export données JSON, droit à l'oubli (anonymize route), audit trail admin | ✅ |
 
-**Prochaine étape :** Story 5.3 (PDF export web) + Epic 7 RGPD.
+**Prochaine étape :** Story 5.3 (PDF export web) + Epic 7 RGPD côté mobile (backlog).
