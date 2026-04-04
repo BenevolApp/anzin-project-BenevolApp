@@ -181,6 +181,7 @@ export function DashboardStats() {
             { href: "/admin/pending-users", label: "Gérer les comptes en attente →" },
             { href: "/missions", label: "Voir toutes les missions →" },
             { href: "/admin/missions/new", label: "Créer une nouvelle mission →" },
+            { href: "/admin/proxy-beneficiaire", label: "Comptes co-gérés (proxy) →" },
           ].map((action) => (
             <Link
               key={action.href}

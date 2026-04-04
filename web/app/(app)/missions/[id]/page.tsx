@@ -172,6 +172,12 @@ export default async function MissionDetailPage({
                 >
                   Modifier la mission
                 </Link>
+                <Link
+                  href={`/admin/interventions/new?mission_id=${id}`}
+                  className="block text-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                >
+                  Planifier une intervention
+                </Link>
               </>
             )}
           </div>

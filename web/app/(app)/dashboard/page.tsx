@@ -91,6 +91,12 @@ export default async function DashboardPage() {
                 Mes heures de bénévolat →
               </a>
             )}
+            <a
+              href="/inbox"
+              className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+            >
+              Messagerie →
+            </a>
           </div>
         )}
 
