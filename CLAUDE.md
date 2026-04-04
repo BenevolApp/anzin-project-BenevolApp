@@ -394,15 +394,15 @@ cd mobile && npx tsc --noEmit
 | Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | — | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
 | Story 4.4 | Confirmation pointage + file d'attente offline | — | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
 | Story 4.5 | RLS Epic 4 (interventions, pointages, qr, tokens) | — | ✅ (009–012 créés — à appliquer SQL Editor) |
-| **Epic 5** | Suivi & Valorisation Heures | backlog | ✅ mobile (CSV) |
-| Story 5.1 | Bénévole — historique heures + export CSV | — | ✅ (`benevole/mes-heures.tsx`) |
+| **Epic 5** | Suivi & Valorisation Heures | ⏳ web partiel | ✅ mobile (CSV) |
+| Story 5.1 | Bénévole — historique heures + export CSV | ✅ (`benevole/mes-heures/`) | ✅ (`benevole/mes-heures.tsx`) |
 | Story 5.2 | Backend export CSV service_role | — | ✅ (`backend/src/routes/export.ts`) |
-| Story 5.3 | Export PDF (RSA conseiller) | — | ⏳ Epic 5 suite |
-| **Epic 6** | Administration & Communication | backlog | ✅ mobile (alertes) |
-| Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | — | ✅ (`admin/dashboard.tsx`) |
-| Story 6.2 | Realtime (abonnements live) | — | ✅ (dashboard auto-refresh) |
-| Story 6.3 | Inbox admin→user (is_human) | — | ✅ (`inbox/`, `admin/send-message.tsx`) |
-| Story 6.4 | Compte co-géré (proxy admin) | — | ✅ (`admin/proxy-beneficiaire.tsx`) |
+| Story 5.3 | Export PDF (RSA conseiller) | ⏳ | ⏳ |
+| **Epic 6** | Administration & Communication | ⏳ web partiel | ✅ mobile |
+| Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | ✅ (`admin/dashboard/`) | ✅ (`admin/dashboard.tsx`) |
+| Story 6.2 | Realtime (abonnements live) | ✅ (dans `dashboard-stats.tsx`) | ✅ (dashboard auto-refresh) |
+| Story 6.3 | Inbox admin→user (is_human) | ⏳ | ✅ (`inbox/`, `admin/send-message.tsx`) |
+| Story 6.4 | Compte co-géré (proxy admin) | ⏳ | ✅ (`admin/proxy-beneficiaire.tsx`) |
 | **Epic 7** | Conformité RGPD | backlog | backlog |
 
 ---
@@ -479,4 +479,6 @@ cd mobile && npx tsc --noEmit
 | 2026-04-04 S2 | mobile | Epic 4 complet : scan QR, fallback, confirm, file offline MMKV, RLS 009–012, section interventions admin | ✅ |
 | 2026-04-04 S3 | mobile | Epic 5 Story 5.1+5.2 (export CSV mobile + backend) + Epic 6 Story 6.1 (dashboard admin alertes) | ✅ |
 
-**Prochaine étape :** Epic 7 — RGPD (export données, anonymisation, audit trail) + anti-fraude HMAC Epic 7.
+| 2026-04-05 | web | Epic 5.1 (mes-heures + export CSV) + Epic 6.1 (dashboard admin alertes + Realtime) | ✅ |
+
+**Prochaine étape web :** Story 6.3 (Inbox) + Story 6.4 (Proxy admin) + Story 4.2 (Interventions admin web).
