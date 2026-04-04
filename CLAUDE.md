@@ -12,6 +12,24 @@
 3. **Notes et remarques** → toujours écrire dans ce fichier (section Pièges ou Notes de session), jamais seulement dans la réponse chat.
 4. **Sync CLAUDE.md entre branches** → après toute mise à jour, propager via `git show <branche>:CLAUDE.md > CLAUDE.md` sur l'autre branche.
 5. **Push GitHub après chaque story ET chaque correction** → commit + `git push origin <branche>` après chaque story terminée ET après chaque bug fix / correction de problème. Ne jamais laisser de commits locaux sans push.
+6. **Tout code écrit ou modifié DOIT passer la CI GitHub Actions** → avant tout commit, vérifier mentalement (ou lancer localement) les contraintes ci-dessous. Un commit qui casse la CI est interdit.
+
+### Contraintes CI obligatoires (`.github/workflows/ci.yml`)
+
+| Étape | Commande CI | Contrainte à respecter |
+|-------|-------------|----------------------|
+| Install | `pnpm install --frozen-lockfile` | Si un `package.json` est modifié, **toujours** regénérer le lockfile avec `pnpm install --no-frozen-lockfile` et committer `pnpm-lock.yaml`. Synchroniser `web/package.json` entre branches si nécessaire. |
+| Prisma generate | `pnpm exec prisma generate` | Après toute modification de `schema.prisma`, le client généré (`generated/prisma/`) doit être cohérent avec l'import dans le code. |
+| Typecheck backend | `pnpm turbo run typecheck --filter=backend` | `backend/` doit passer `tsc --noEmit` sans erreur. Contraintes spécifiques : `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`, `rootDir: "./"` (import depuis `generated/` autorisé). |
+| Lint backend | `pnpm turbo run lint --filter=backend` | Aucune erreur ESLint dans `backend/src/`. |
+| Security audit | `pnpm audit --audit-level=high` | Aucune vulnérabilité de sévérité HIGH ou CRITICAL dans les dépendances. |
+
+### Pièges CI récurrents
+- **`pnpm-lock.yaml` désynchronisé** → toujours committer le lockfile après ajout/suppression de dépendance, et synchroniser `web/package.json` entre les branches `web` et `mobile`
+- **Import Prisma v7** → utiliser `../../generated/prisma/client.js` (pas `index.js`)
+- **`new PrismaClient()`** → Prisma v7 exige un adapter : `new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env["DATABASE_URL"] ?? "" }) })`
+- **`req.params` Express v5** → typé `string | string[]`, utiliser `String(req.params["param"] ?? "")` pour obtenir un `string`
+- **`req.params` avec `noUncheckedIndexedAccess`** → accès par index retourne `T | undefined`, toujours utiliser `?? ""`
 
 ---
 
