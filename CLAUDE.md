@@ -33,6 +33,7 @@
 - **TS2883 "inferred type cannot be named"** → annoter explicitement la variable : `import { Router, type Router as RouterType } from "express"` puis `const router: RouterType = Router()`
 - **Vulnérabilité transitive** → utiliser `pnpm.overrides` dans le `package.json` racine pour forcer la version patchée, puis `pnpm install --no-frozen-lockfile` et committer le lockfile
 - **Checklist avant tout commit** → lancer `pnpm install --frozen-lockfile` + `tsc --noEmit` (dans le package modifié) + `pnpm audit --audit-level=high`
+- **Next.js 16 — `middleware.ts` + `proxy.ts` interdit** → Next.js 16 n'accepte que `proxy.ts`. Supprimer `middleware.ts` si les deux coexistent (erreur build Vercel : "middleware-to-proxy")
 
 ---
 
