@@ -125,6 +125,9 @@ UI → React Hook Form (Zod) → Supabase Client → PostgreSQL (RLS) → Respon
 | Offline mobile | react-native-mmkv | ^4.3.0 ✅ installé Epic 4 |
 | QR Code | react-native-qrcode-svg | ^6.3.21 ✅ installé Epic 4 |
 | Caméra | expo-camera | ~17.0.10 ✅ installé Epic 4 |
+| Fichiers | expo-file-system | ~19.0.21 ✅ installé Epic 5 |
+| Partage | expo-sharing | ~14.0.8 ✅ installé Epic 5 |
+| PDF | pdfkit (backend) | ^0.15.0 ✅ installé Epic 5 |
 | Monorepo | Turborepo + pnpm | 2.5.0 / 10.33.0 |
 | TypeScript | strict | ^5 web, ~5.9 mobile |
 | CI/CD | GitHub Actions | node 24 |
@@ -433,6 +436,7 @@ cd mobile && npx tsc --noEmit
 
 ### Epic 5 — Export heures
 - **`expo-file-system` + `expo-sharing`** → nécessitent un build natif (incompatible Expo Go) — même contrainte qu'expo-camera et react-native-mmkv
+- **Versions SDK 54** → `expo-file-system@~19.0.21` et `expo-sharing@~14.0.8` — toujours utiliser `npx expo install <package>` plutôt que de deviner les versions, Expo résout automatiquement la compatibilité SDK
 - **`X-Export-Secret`** → variable d'environnement backend (`EXPORT_SECRET`) à ajouter aux secrets GitHub et dans `.env`
 - **Export CSV mobile** : les jointures Supabase imbriquées peuvent retourner des tableaux ou objets selon la query — utiliser le pattern `Array.isArray(x) ? x[0] : x` pour normaliser
 
