@@ -84,11 +84,27 @@ export default async function DashboardPage() {
               Voir les missions →
             </a>
             {role === "benevole" && (
+              <>
+                <a
+                  href="/pointage/scan"
+                  className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                >
+                  Scanner un QR code →
+                </a>
+                <a
+                  href="/benevole/mes-heures"
+                  className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                >
+                  Mes heures de bénévolat →
+                </a>
+              </>
+            )}
+            {role === "beneficiaire" && (
               <a
-                href="/benevole/mes-heures"
+                href="/beneficiaire/qr"
                 className="block rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:border-zinc-400 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
               >
-                Mes heures de bénévolat →
+                Mon QR Code →
               </a>
             )}
             <a

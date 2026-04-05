@@ -389,10 +389,10 @@ cd mobile && npx tsc --noEmit
 | Story 3.2 | Admin créer/éditer mission + planning | ✅ | ✅ |
 | Story 3.3 | Bénévole — postuler + actions statut admin | ✅ | ✅ |
 | **Epic 4** | Présence & Pointage QR | ⏳ web partiel | ✅ mobile |
-| Story 4.1 | Génération QR bénéficiaire | — | ✅ (`beneficiaire/qr.tsx`) |
+| Story 4.1 | Génération QR bénéficiaire | ✅ (`beneficiaire/qr/`) | ✅ (`beneficiaire/qr.tsx`) |
 | Story 4.2 | Admin — créer intervention planifiée | ✅ (`admin/interventions/new/`) | ✅ (`admin/interventions/new.tsx`) |
-| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | — (caméra mobile uniquement) | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
-| Story 4.4 | Confirmation pointage + file d'attente offline | — (mobile uniquement) | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
+| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | ✅ (`pointage/scan/`, `pointage/fallback/`) | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
+| Story 4.4 | Confirmation pointage + file d'attente offline | ✅ (`pointage/confirm/`) | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
 | Story 4.5 | RLS Epic 4 (interventions, pointages, qr, tokens) | — | ✅ (009–012 créés — à appliquer SQL Editor) |
 | **Epic 5** | Suivi & Valorisation Heures | ⏳ web partiel | ✅ mobile (CSV) |
 | Story 5.1 | Bénévole — historique heures + export CSV | ✅ (`benevole/mes-heures/`) | ✅ (`benevole/mes-heures.tsx`) |
@@ -487,4 +487,6 @@ cd mobile && npx tsc --noEmit
 | 2026-04-05 S2 | web | Epic 6.3 (inbox + envoi message) + 6.4 (proxy bénéficiaire) + 4.2 (planifier intervention) | ✅ |
 | 2026-04-05 S3 | web | Epic 7 RGPD : export données JSON, droit à l'oubli (anonymize route), audit trail admin | ✅ |
 
-**Prochaine étape :** Story 5.3 (PDF export web) + Epic 7 RGPD côté mobile (backlog).
+| 2026-04-05 S5 | web | Stories 4.1/4.3/4.4 (QR web : affichage, scan webcam, fallback, confirm) + TanStack Query v5 | ✅ |
+
+**Prochaine étape :** Epic 7 RGPD mobile (backlog).
