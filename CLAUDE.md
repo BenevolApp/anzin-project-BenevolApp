@@ -256,13 +256,13 @@ Les fichiers SQL sont dans `backend/prisma/policies/`. Copier-coller leur conten
 |---------|-----------------|--------|
 | `000_rls_naming_template.sql` | — (référence) | ✅ créé |
 | `001_rls_helper_functions.sql` | `get_my_role()`, `get_my_org_id()` SECURITY DEFINER | ✅ appliqué |
-| `002_profiles_policies.sql` | `profiles` SELECT/UPDATE own + admin | ⏳ à appliquer |
-| `003_profiles_sensitive_policies.sql` | `profiles_sensitive` SELECT own + admin | ⏳ à appliquer |
-| `004_validation_appointments_policies.sql` | SELECT own/admin, INSERT/UPDATE admin | ⏳ à appliquer |
-| `005_notifications_policies.sql` | SELECT own, INSERT admin, UPDATE own | ⏳ à appliquer |
-| `006_missions_policies.sql` | `missions` + `mission_schedules` | ⏳ à appliquer |
-| `007_mission_applications_policies.sql` | `mission_applications` | ⏳ à appliquer |
-| `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ⏳ à appliquer |
+| `002_profiles_policies.sql` | `profiles` SELECT/UPDATE own + admin | ✅ appliqué |
+| `003_profiles_sensitive_policies.sql` | `profiles_sensitive` SELECT own + admin | ✅ appliqué |
+| `004_validation_appointments_policies.sql` | SELECT own/admin, INSERT/UPDATE admin | ✅ appliqué |
+| `005_notifications_policies.sql` | SELECT own, INSERT admin, UPDATE own | ✅ appliqué |
+| `006_missions_policies.sql` | `missions` + `mission_schedules` | ✅ appliqué |
+| `007_mission_applications_policies.sql` | `mission_applications` | ✅ appliqué |
+| `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ✅ appliqué |
 | `009_mission_interventions_policies.sql` | `mission_interventions` | ✅ appliqué |
 | `010_pointages_policies.sql` | `pointages` | ✅ appliqué |
 | `011_beneficiary_qr_policies.sql` | `beneficiary_qr` | ✅ appliqué |
@@ -551,4 +551,6 @@ Sur la branche `mobile`, `web/app/` contient uniquement le template Next.js de b
 
 | 2026-04-05 S4 | web+mobile | Story 5.3 PDF export sécurisé (proxy Next.js) + FR-10 anti-fraude async backend | ✅ |
 
-**Prochaine étape :** RLS 002–008 à appliquer en SQL Editor (bloquant pour la prod) + Epic 7 RGPD côté mobile (backlog).
+| 2026-04-05 S5 | mobile | RLS 002–008 appliqués en SQL Editor + config déploiement Railway + EAS Build + rate limiting backend | ✅ |
+
+**Prochaine étape :** Déploiement backend Railway + premier build EAS mobile + Epic 7 RGPD mobile (backlog).
