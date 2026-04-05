@@ -256,13 +256,13 @@ Les fichiers SQL sont dans `backend/prisma/policies/`. Copier-coller leur conten
 |---------|-----------------|--------|
 | `000_rls_naming_template.sql` | — (référence) | ✅ créé |
 | `001_rls_helper_functions.sql` | `get_my_role()`, `get_my_org_id()` SECURITY DEFINER | ✅ appliqué |
-| `002_profiles_policies.sql` | `profiles` SELECT/UPDATE own + admin | ⏳ à appliquer |
-| `003_profiles_sensitive_policies.sql` | `profiles_sensitive` SELECT own + admin | ⏳ à appliquer |
-| `004_validation_appointments_policies.sql` | SELECT own/admin, INSERT/UPDATE admin | ⏳ à appliquer |
-| `005_notifications_policies.sql` | SELECT own, INSERT admin, UPDATE own | ⏳ à appliquer |
-| `006_missions_policies.sql` | `missions` + `mission_schedules` | ⏳ à appliquer |
-| `007_mission_applications_policies.sql` | `mission_applications` | ⏳ à appliquer |
-| `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ⏳ à appliquer |
+| `002_profiles_policies.sql` | `profiles` SELECT/UPDATE own + admin | ✅ appliqué |
+| `003_profiles_sensitive_policies.sql` | `profiles_sensitive` SELECT own + admin | ✅ appliqué |
+| `004_validation_appointments_policies.sql` | SELECT own/admin, INSERT/UPDATE admin | ✅ appliqué |
+| `005_notifications_policies.sql` | SELECT own, INSERT admin, UPDATE own | ✅ appliqué |
+| `006_missions_policies.sql` | `missions` + `mission_schedules` | ✅ appliqué |
+| `007_mission_applications_policies.sql` | `mission_applications` | ✅ appliqué |
+| `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ✅ appliqué |
 | `009_mission_interventions_policies.sql` | `mission_interventions` | ✅ appliqué |
 | `010_pointages_policies.sql` | `pointages` | ✅ appliqué |
 | `011_beneficiary_qr_policies.sql` | `beneficiary_qr` | ✅ appliqué |
@@ -410,7 +410,29 @@ cd mobile && npx tsc --noEmit
 
 ---
 
-## 11. Documents de référence
+## 11. Backend — Routes et scripts
+
+> Vérifié le 2026-04-05. Backend Express minimal avec 2 routes actives.
+
+| Fichier | Route | Description |
+|---------|-------|-------------|
+| `src/server.ts` | — | Express + CORS + Helmet + body parsing, port `$PORT` ou 3000 |
+| `src/routes/export.ts` | `GET /api/export/heures/:benevole_id` | Export CSV heures bénévole (auth par `X-Export-Secret`) |
+| `src/routes/export.ts` | `GET /api/export/pdf/:benevole_id` | Export PDF attestation RSA (auth par `X-Export-Secret`) |
+| `src/routes/fraud.ts` | `POST /api/fraud/check` | Analyse fraude async (devices partagés, IP, pointages rapides) → `audit_logs` |
+
+**Scripts npm :**
+- `dev` : `tsx watch src/server.ts`
+- `build` : `tsc` → `dist/`
+- `start` : `node dist/server.js`
+
+**Dépendances notables non documentées ailleurs :**
+- `express-rate-limit ^8.3.1` — installé, pas encore câblé sur les routes
+- `xss-clean ^0.1.4` — deprecated, warning non bloquant
+
+---
+
+## 15. Documents de référence
 
 | Document | Chemin |
 |----------|--------|
@@ -467,10 +489,50 @@ cd mobile && npx tsc --noEmit
 
 ### Divers
 - **`xss-clean` deprecated** → warning npm non bloquant sur le backend
+- **`express-rate-limit`** → installé sur le backend (`^8.3.1`) mais non encore câblé sur les routes — à brancher sur `/api/export` et `/api/fraud` avant prod
 
 ---
 
-## 13. Journal de développement
+## 13. Déploiement — Recommandations par composant
+
+> Analysé le 2026-04-05. Aucun Dockerfile ni config Railway/Fly/Render n'existe actuellement.
+
+| Composant | Outil recommandé | Statut config | Coût |
+|-----------|-----------------|---------------|------|
+| **Web (Next.js — branche `web`)** | **Vercel** | ✅ `vercel.json` existant | Gratuit (repo public) |
+| **Backend (Express — branche `mobile`)** | **Railway** | ⏳ à configurer | Free tier → ~$5/mois |
+| **Mobile (Expo)** | **Expo EAS Build** | ⏳ `eas.json` non créé | Gratuit (30 builds/mois) |
+| **BDD / Auth** | **Supabase Cloud** | ✅ déjà hébergé EU West | Gratuit (plan Free) |
+
+### Pourquoi ces choix
+
+- **Vercel** : zéro config pour Next.js, CDN global, déploiements atomiques. Seule contrainte : repo public pour le free tier.
+- **Railway** : connecte GitHub → détecte automatiquement Node.js → build (`pnpm build`) + start (`node dist/server.js`) sans Dockerfile. Simple et fiable pour un Express avec 2 routes.
+- **Expo EAS Build** : standard officiel Expo, indispensable pour les modules natifs (expo-camera, MMKV, expo-file-system). Pas d'alternative viable.
+- **Docker** : non retenu pour le MVP — Railway containerise automatiquement en coulisses sans Dockerfile à maintenir.
+
+### Étapes à faire pour déployer le backend (Railway)
+
+1. Créer un projet Railway → connecter le repo GitHub (branche `mobile`)
+2. Définir le root directory : `backend/`
+3. Build command : `pnpm build` (ou `cd backend && pnpm build`)
+4. Start command : `node dist/server.js`
+5. Ajouter les variables d'environnement : `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `EXPORT_SECRET`, `PORT`
+
+### Étapes à faire pour Expo EAS Build
+
+1. `npm install -g eas-cli`
+2. `eas login`
+3. Depuis `mobile/` : `eas build:configure` → génère `eas.json`
+4. Premier build : `eas build --platform android --profile preview`
+
+### Note branche `mobile` — web stub
+
+Sur la branche `mobile`, `web/app/` contient uniquement le template Next.js de base (4 fichiers). Toutes les pages web réelles (Epic 2–7) vivent **exclusivement sur la branche `web`**. C'est normal et attendu — ne pas confondre les deux.
+
+---
+
+## 14. Journal de développement
 
 > Le détail complet (fichiers créés/modifiés, erreurs, décisions) est dans **[`DEV_LOG.md`](./DEV_LOG.md)**.
 > Cette section ne contient que le résumé par session.
@@ -489,4 +551,6 @@ cd mobile && npx tsc --noEmit
 
 | 2026-04-05 S4 | web+mobile | Story 5.3 PDF export sécurisé (proxy Next.js) + FR-10 anti-fraude async backend | ✅ |
 
-**Prochaine étape :** RLS 002–008 à appliquer en SQL Editor (bloquant pour la prod) + Epic 7 RGPD côté mobile (backlog).
+| 2026-04-05 S5 | mobile | RLS 002–008 appliqués en SQL Editor + config déploiement Railway + EAS Build + rate limiting backend | ✅ |
+
+**Prochaine étape :** Déploiement backend Railway + premier build EAS mobile + Epic 7 RGPD mobile (backlog).
