@@ -275,6 +275,12 @@ export default function AdminDashboardScreen() {
             >
               <Text className="text-sm text-blue-700">Comptes co-gérés (proxy) →</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              className="rounded-xl border border-zinc-200 bg-white px-4 py-3"
+              onPress={() => router.push('/(app)/admin/audit-logs')}
+            >
+              <Text className="text-sm text-zinc-700">Audit trail →</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       )}

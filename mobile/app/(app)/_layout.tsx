@@ -19,6 +19,10 @@ export default function AppLayout() {
       <Stack.Screen name="pointage/scan" />
       <Stack.Screen name="pointage/fallback" />
       <Stack.Screen name="pointage/confirm" />
+      <Stack.Screen name="mon-compte" />
+      <Stack.Screen name="rgpd/export-donnees" />
+      <Stack.Screen name="rgpd/supprimer-compte" />
+      <Stack.Screen name="admin/audit-logs" />
     </Stack>
   );
 }

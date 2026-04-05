@@ -160,6 +160,13 @@ export default function DashboardScreen() {
         )}
 
         <TouchableOpacity
+          className="mt-4 rounded-2xl border border-zinc-200 bg-white px-4 py-3"
+          onPress={() => router.push('/(app)/mon-compte')}
+        >
+          <Text className="text-sm text-zinc-700">Mon compte &amp; données RGPD →</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           className="mt-6"
           onPress={() => supabase.auth.signOut()}
         >

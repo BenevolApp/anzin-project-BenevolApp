@@ -405,10 +405,10 @@ cd mobile && npx tsc --noEmit
 | Story 6.2 | Realtime (abonnements live) | ✅ (dans `dashboard-stats.tsx`) | ✅ (dashboard auto-refresh) |
 | Story 6.3 | Inbox admin→user (is_human) | ✅ (`inbox/`, `admin/envoyer-message/`) | ✅ (`inbox/`, `admin/send-message.tsx`) |
 | Story 6.4 | Compte co-géré (proxy admin) | ✅ (`admin/proxy-beneficiaire/`) | ✅ (`admin/proxy-beneficiaire.tsx`) |
-| **Epic 7** | Conformité RGPD | ✅ web | backlog |
-| Story 7.1 | Export données perso (JSON) | ✅ (`mon-compte/export-donnees/`) | — |
-| Story 7.2 | Droit à l'oubli (anonymisation + suppression) | ✅ (`api/rgpd/anonymize/`) | — |
-| Story 7.3 | Audit trail admin | ✅ (`admin/audit-logs/`) | — |
+| **Epic 7** | Conformité RGPD | ✅ web | ✅ mobile |
+| Story 7.1 | Export données perso (JSON) | ✅ (`mon-compte/export-donnees/`) | ✅ (`rgpd/export-donnees.tsx`) |
+| Story 7.2 | Droit à l'oubli (anonymisation + suppression) | ✅ (`api/rgpd/anonymize/`) | ✅ (`rgpd/supprimer-compte.tsx` → `backend /api/rgpd/anonymize`) |
+| Story 7.3 | Audit trail admin | ✅ (`admin/audit-logs/`) | ✅ (`admin/audit-logs.tsx`) |
 
 ---
 
@@ -422,6 +422,7 @@ cd mobile && npx tsc --noEmit
 | `src/routes/export.ts` | `GET /api/export/heures/:benevole_id` | Export CSV heures bénévole (auth par `X-Export-Secret`) |
 | `src/routes/export.ts` | `GET /api/export/pdf/:benevole_id` | Export PDF attestation RSA (auth par `X-Export-Secret`) |
 | `src/routes/fraud.ts` | `POST /api/fraud/check` | Analyse fraude async (devices partagés, IP, pointages rapides) → `audit_logs` |
+| `src/routes/rgpd.ts` | `POST /api/rgpd/anonymize` | Anonymise profil + supprime compte auth (Bearer JWT, 5 req/h) |
 
 **Scripts npm :**
 - `dev` : `tsx watch src/server.ts`
@@ -488,6 +489,7 @@ cd mobile && npx tsc --noEmit
 - **Versions SDK 54** → `expo-file-system@~19.0.21` et `expo-sharing@~14.0.8` — toujours utiliser `npx expo install <package>` plutôt que de deviner les versions, Expo résout automatiquement la compatibilité SDK
 - **`X-Export-Secret`** → variable d'environnement backend (`EXPORT_SECRET`) à ajouter aux secrets GitHub et dans `.env`
 - **Export CSV mobile** : les jointures Supabase imbriquées peuvent retourner des tableaux ou objets selon la query — utiliser le pattern `Array.isArray(x) ? x[0] : x` pour normaliser
+- **`expo-file-system` v19 (SDK 54)** → l'ancienne API (`cacheDirectory`, `documentDirectory`, `EncodingType`, `writeAsStringAsync`) a été déplacée dans `expo-file-system/legacy`. Toujours importer `from 'expo-file-system/legacy'` pour ces APIs.
 
 ### Divers
 - **`xss-clean` deprecated** → warning npm non bloquant sur le backend

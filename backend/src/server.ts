@@ -8,6 +8,7 @@ import type { Express } from "express";
 // Import Routes
 import exportRouter from "./routes/export.js";
 import fraudRouter from "./routes/fraud.js";
+import rgpdRouter from "./routes/rgpd.js";
 
 // Config
 const PORT = process.env.PORT || 3000;
@@ -41,9 +42,18 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+const rgpdLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Trop de requêtes." },
+});
+
 // API Routes
 app.use("/api/export", exportLimiter, exportRouter);
 app.use("/api/fraud", fraudLimiter, fraudRouter);
+app.use("/api/rgpd", rgpdLimiter, rgpdRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
