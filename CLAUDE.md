@@ -256,17 +256,19 @@ Les fichiers SQL sont dans `backend/prisma/policies/`. Copier-coller leur conten
 |---------|-----------------|--------|
 | `000_rls_naming_template.sql` | — (référence) | ✅ créé |
 | `001_rls_helper_functions.sql` | `get_my_role()`, `get_my_org_id()` SECURITY DEFINER | ✅ appliqué |
-| `002_profiles_policies.sql` | `profiles` SELECT/UPDATE own + admin | ⏳ à appliquer |
-| `003_profiles_sensitive_policies.sql` | `profiles_sensitive` SELECT own + admin | ⏳ à appliquer |
-| `004_validation_appointments_policies.sql` | SELECT own/admin, INSERT/UPDATE admin | ⏳ à appliquer |
-| `005_notifications_policies.sql` | SELECT own, INSERT admin, UPDATE own | ⏳ à appliquer |
-| `006_missions_policies.sql` | `missions` + `mission_schedules` | ⏳ à appliquer |
-| `007_mission_applications_policies.sql` | `mission_applications` | ⏳ à appliquer |
-| `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ⏳ à appliquer |
+| `002_profiles_policies.sql` | `profiles` SELECT/UPDATE own + admin | ✅ appliqué |
+| `003_profiles_sensitive_policies.sql` | `profiles_sensitive` SELECT own + admin | ✅ appliqué |
+| `004_validation_appointments_policies.sql` | SELECT own/admin, INSERT/UPDATE admin | ✅ appliqué |
+| `005_notifications_policies.sql` | SELECT own, INSERT admin, UPDATE own | ✅ appliqué |
+| `006_missions_policies.sql` | `missions` + `mission_schedules` | ✅ appliqué |
+| `007_mission_applications_policies.sql` | `mission_applications` | ✅ appliqué |
+| `008_types_service_adresses_policies.sql` | `types_service`, `adresses` | ✅ appliqué |
 | `009_mission_interventions_policies.sql` | `mission_interventions` | ✅ appliqué |
 | `010_pointages_policies.sql` | `pointages` | ✅ appliqué |
 | `011_beneficiary_qr_policies.sql` | `beneficiary_qr` | ✅ appliqué |
 | `012_attendance_tokens_policies.sql` | `attendance_tokens` | ✅ appliqué |
+
+| `013_waitlist_cascade.sql` | Trigger cascade liste d'attente (promotion automatique + notif) | ⏳ à appliquer |
 
 Tables **sans policy encore** (Epic 7) : `disponibilites`, `mission_followups`, `admin_notes`, `audit_logs`.
 
@@ -339,12 +341,12 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...  ← JAMAIS côté client
 | FR-02 | Gestion missions (draft → published → completed/cancelled) | ✅ web + mobile |
 | FR-03 | Candidature & Liste d'attente (position, cascade PL/pgSQL) | ✅ postuler web+mobile / cascade backlog |
 | FR-04 | Pointage QR (offline-first MMKV, HMAC, fallback 6 chiffres) | ✅ mobile (build natif requis) |
-| FR-05 | Export heures (PDF/CSV horodaté pour conseiller RSA) | ⏳ Epic 5 |
+| FR-05 | Export heures (PDF/CSV horodaté pour conseiller RSA) | ✅ web + mobile |
 | FR-06 | Dashboard admin (alertes 🔴🟠🟡, Realtime) | ⏳ Epic 6 |
 | FR-07 | Inbox admin→user (séparée des notifs système) | ⏳ Epic 6 |
 | FR-08 | Compte co-géré (proxy admin, accès dual, logs) | ⏳ Epic 6 |
 | FR-09 | RGPD (export, anonymisation, audit trail) | ✅ web |
-| FR-10 | Anti-fraude (device fingerprint, IP, flagging async) | ⏳ Epic 7 |
+| FR-10 | Anti-fraude (device fingerprint, IP, flagging async) | ✅ backend (`/api/fraud/check`) |
 
 ---
 
@@ -387,30 +389,53 @@ cd mobile && npx tsc --noEmit
 | **Epic 3** | Gestion des Missions | ✅ | ✅ |
 | Story 3.1 | Liste missions (role-aware) | ✅ | ✅ |
 | Story 3.2 | Admin créer/éditer mission + planning | ✅ | ✅ |
-| Story 3.3 | Bénévole — postuler + actions statut admin | ✅ | ✅ |
+| Story 3.3 | Bénévole — postuler + actions statut admin + cascade liste d'attente | ✅ | ✅ |
 | **Epic 4** | Présence & Pointage QR | ⏳ web partiel | ✅ mobile |
-| Story 4.1 | Génération QR bénéficiaire | ✅ (`beneficiaire/qr/`) | ✅ (`beneficiaire/qr.tsx`) |
+| Story 4.1 | Génération QR bénéficiaire | — | ✅ (`beneficiaire/qr.tsx`) |
 | Story 4.2 | Admin — créer intervention planifiée | ✅ (`admin/interventions/new/`) | ✅ (`admin/interventions/new.tsx`) |
-| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | ✅ (`pointage/scan/`, `pointage/fallback/`) | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
-| Story 4.4 | Confirmation pointage + file d'attente offline | ✅ (`pointage/confirm/`) | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
+| Story 4.3 | Bénévole — scan QR + fallback 6 chiffres | — (caméra mobile uniquement) | ✅ (`pointage/scan.tsx`, `pointage/fallback.tsx`) |
+| Story 4.4 | Confirmation pointage + file d'attente offline | — (mobile uniquement) | ✅ (`pointage/confirm.tsx`, `offline-queue.ts`) |
 | Story 4.5 | RLS Epic 4 (interventions, pointages, qr, tokens) | — | ✅ (009–012 créés — à appliquer SQL Editor) |
 | **Epic 5** | Suivi & Valorisation Heures | ⏳ web partiel | ✅ mobile (CSV) |
 | Story 5.1 | Bénévole — historique heures + export CSV | ✅ (`benevole/mes-heures/`) | ✅ (`benevole/mes-heures.tsx`) |
 | Story 5.2 | Backend export CSV service_role | — | ✅ (`backend/src/routes/export.ts`) |
-| Story 5.3 | Export PDF (RSA conseiller) | ⏳ | ⏳ |
+| Story 5.3 | Export PDF (RSA conseiller) | ✅ (`api/export/pdf/[benevoleId]/`) | ✅ (`benevole/mes-heures.tsx`) |
 | **Epic 6** | Administration & Communication | ✅ web | ✅ mobile |
 | Story 6.1 | Dashboard admin alertes 🔴🟠🟡 | ✅ (`admin/dashboard/`) | ✅ (`admin/dashboard.tsx`) |
 | Story 6.2 | Realtime (abonnements live) | ✅ (dans `dashboard-stats.tsx`) | ✅ (dashboard auto-refresh) |
 | Story 6.3 | Inbox admin→user (is_human) | ✅ (`inbox/`, `admin/envoyer-message/`) | ✅ (`inbox/`, `admin/send-message.tsx`) |
 | Story 6.4 | Compte co-géré (proxy admin) | ✅ (`admin/proxy-beneficiaire/`) | ✅ (`admin/proxy-beneficiaire.tsx`) |
-| **Epic 7** | Conformité RGPD | ✅ web | backlog |
-| Story 7.1 | Export données perso (JSON) | ✅ (`mon-compte/export-donnees/`) | — |
-| Story 7.2 | Droit à l'oubli (anonymisation + suppression) | ✅ (`api/rgpd/anonymize/`) | — |
-| Story 7.3 | Audit trail admin | ✅ (`admin/audit-logs/`) | — |
+| **Epic 7** | Conformité RGPD | ✅ web | ✅ mobile |
+| Story 7.1 | Export données perso (JSON) | ✅ (`mon-compte/export-donnees/`) | ✅ (`rgpd/export-donnees.tsx`) |
+| Story 7.2 | Droit à l'oubli (anonymisation + suppression) | ✅ (`api/rgpd/anonymize/`) | ✅ (`rgpd/supprimer-compte.tsx` → `backend /api/rgpd/anonymize`) |
+| Story 7.3 | Audit trail admin | ✅ (`admin/audit-logs/`) | ✅ (`admin/audit-logs.tsx`) |
 
 ---
 
-## 11. Documents de référence
+## 11. Backend — Routes et scripts
+
+> Vérifié le 2026-04-05. Backend Express minimal avec 2 routes actives.
+
+| Fichier | Route | Description |
+|---------|-------|-------------|
+| `src/server.ts` | — | Express + CORS + Helmet + body parsing, port `$PORT` ou 3000 |
+| `src/routes/export.ts` | `GET /api/export/heures/:benevole_id` | Export CSV heures bénévole (auth par `X-Export-Secret`) |
+| `src/routes/export.ts` | `GET /api/export/pdf/:benevole_id` | Export PDF attestation RSA (auth par `X-Export-Secret`) |
+| `src/routes/fraud.ts` | `POST /api/fraud/check` | Analyse fraude async (devices partagés, IP, pointages rapides) → `audit_logs` |
+| `src/routes/rgpd.ts` | `POST /api/rgpd/anonymize` | Anonymise profil + supprime compte auth (Bearer JWT, 5 req/h) |
+
+**Scripts npm :**
+- `dev` : `tsx watch src/server.ts`
+- `build` : `tsc` → `dist/`
+- `start` : `node dist/server.js`
+
+**Dépendances notables non documentées ailleurs :**
+- `express-rate-limit ^8.3.1` — installé, pas encore câblé sur les routes
+- `xss-clean ^0.1.4` — deprecated, warning non bloquant
+
+---
+
+## 15. Documents de référence
 
 | Document | Chemin |
 |----------|--------|
@@ -464,13 +489,79 @@ cd mobile && npx tsc --noEmit
 - **Versions SDK 54** → `expo-file-system@~19.0.21` et `expo-sharing@~14.0.8` — toujours utiliser `npx expo install <package>` plutôt que de deviner les versions, Expo résout automatiquement la compatibilité SDK
 - **`X-Export-Secret`** → variable d'environnement backend (`EXPORT_SECRET`) à ajouter aux secrets GitHub et dans `.env`
 - **Export CSV mobile** : les jointures Supabase imbriquées peuvent retourner des tableaux ou objets selon la query — utiliser le pattern `Array.isArray(x) ? x[0] : x` pour normaliser
+- **`expo-file-system` v19 (SDK 54)** → l'ancienne API (`cacheDirectory`, `documentDirectory`, `EncodingType`, `writeAsStringAsync`) a été déplacée dans `expo-file-system/legacy`. Toujours importer `from 'expo-file-system/legacy'` pour ces APIs.
 
 ### Divers
 - **`xss-clean` deprecated** → warning npm non bloquant sur le backend
+- **`express-rate-limit`** → installé sur le backend (`^8.3.1`) mais non encore câblé sur les routes — à brancher sur `/api/export` et `/api/fraud` avant prod
 
 ---
 
-## 13. Journal de développement
+## 13. Déploiement — Recommandations par composant
+
+> Analysé le 2026-04-05. Aucun Dockerfile ni config Railway/Fly/Render n'existe actuellement.
+
+| Composant | Outil recommandé | Statut config | Coût |
+|-----------|-----------------|---------------|------|
+| **Web (Next.js — branche `web`)** | **Vercel** | ✅ `vercel.json` existant | Gratuit (repo public) |
+| **Backend (Express — branche `mobile`)** | **Railway** | ⏳ à configurer | Free tier → ~$5/mois |
+| **Mobile (Expo)** | **Expo EAS Build** | ⏳ `eas.json` non créé | Gratuit (30 builds/mois) |
+| **BDD / Auth** | **Supabase Cloud** | ✅ déjà hébergé EU West | Gratuit (plan Free) |
+
+### Pourquoi ces choix
+
+- **Vercel** : zéro config pour Next.js, CDN global, déploiements atomiques. Seule contrainte : repo public pour le free tier.
+- **Railway** : connecte GitHub → détecte automatiquement Node.js → build (`pnpm build`) + start (`node dist/server.js`) sans Dockerfile. Simple et fiable pour un Express avec 2 routes.
+- **Expo EAS Build** : standard officiel Expo, indispensable pour les modules natifs (expo-camera, MMKV, expo-file-system). Pas d'alternative viable.
+- **Docker** : non retenu pour le MVP — Railway containerise automatiquement en coulisses sans Dockerfile à maintenir.
+
+### Étapes à faire pour déployer le backend (Railway)
+
+1. Créer un projet Railway → connecter le repo GitHub (branche `mobile`)
+2. Définir le root directory : `backend/`
+3. Build command : `pnpm build` (ou `cd backend && pnpm build`)
+4. Start command : `node dist/server.js`
+5. Ajouter les variables d'environnement : `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `EXPORT_SECRET`, `PORT`
+
+### Étapes à faire pour Expo EAS Build
+
+1. `npm install -g eas-cli`
+2. `eas login`
+3. Depuis `mobile/` : `eas build:configure` → génère `eas.json`
+4. Premier build : `eas build --platform android --profile preview`
+
+### Scalabilité — Points d'amélioration par palier
+
+> À ne faire que si les métriques Supabase Dashboard le justifient (latence, connexions, bande passante).
+
+| Palier | Action | Pourquoi |
+|--------|--------|----------|
+| ~200 users | Activer PITR Supabase (Settings → Addons) | Backup continu, rollback à la minute |
+| ~500 users | Passer Supabase Pro ($25/mois) | +connexions Realtime (200→500), +bande passante, PITR inclus |
+| ~800 users | Migrer RLS vers JWT claims | `get_my_role()` fait une requête SQL à chaque vérification RLS — remplacer par `auth.jwt()->'app_metadata'->>'role'` dans toutes les policies |
+| ~1200 users | Ajouter queue BullMQ + Redis pour PDF | PDFKit est synchrone, bloque le thread Node.js sur exports concurrents |
+| ~1500 users | Redis cache sur requêtes fréquentes | Réduire la charge Supabase sur les listes missions/profils |
+| ~10k users | Revoir architecture Supabase direct | En dessous de 10k MAU, l'architecture actuelle tient sans problème |
+
+**Coût estimé à 1500 users :** Supabase Pro $25 + Railway ~$15 = ~$40/mois
+
+**Migration RLS → JWT claims (quand ~800 users) :**
+```sql
+-- Avant (requête DB à chaque vérification)
+get_my_role() = 'admin'
+
+-- Après (lecture du token JWT, zéro requête)
+(auth.jwt()->'app_metadata'->>'role')::text = 'admin'
+-- Nécessite un Supabase Auth Hook qui injecte role + organisation_id dans app_metadata au login
+```
+
+### Note branche `mobile` — web stub
+
+Sur la branche `mobile`, `web/app/` contient uniquement le template Next.js de base (4 fichiers). Toutes les pages web réelles (Epic 2–7) vivent **exclusivement sur la branche `web`**. C'est normal et attendu — ne pas confondre les deux.
+
+---
+
+## 14. Journal de développement
 
 > Le détail complet (fichiers créés/modifiés, erreurs, décisions) est dans **[`DEV_LOG.md`](./DEV_LOG.md)**.
 > Cette section ne contient que le résumé par session.
@@ -487,6 +578,8 @@ cd mobile && npx tsc --noEmit
 | 2026-04-05 S2 | web | Epic 6.3 (inbox + envoi message) + 6.4 (proxy bénéficiaire) + 4.2 (planifier intervention) | ✅ |
 | 2026-04-05 S3 | web | Epic 7 RGPD : export données JSON, droit à l'oubli (anonymize route), audit trail admin | ✅ |
 
-| 2026-04-05 S5 | web | Stories 4.1/4.3/4.4 (QR web : affichage, scan webcam, fallback, confirm) + TanStack Query v5 | ✅ |
+| 2026-04-05 S4 | web+mobile | Story 5.3 PDF export sécurisé (proxy Next.js) + FR-10 anti-fraude async backend | ✅ |
 
-**Prochaine étape :** Epic 7 RGPD mobile (backlog).
+| 2026-04-05 S5 | mobile | RLS 002–008 appliqués en SQL Editor + config déploiement Railway + EAS Build + rate limiting backend | ✅ |
+
+**Prochaine étape :** Déploiement backend Railway + premier build EAS mobile + Epic 7 RGPD mobile (backlog).
