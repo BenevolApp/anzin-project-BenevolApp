@@ -268,6 +268,8 @@ Les fichiers SQL sont dans `backend/prisma/policies/`. Copier-coller leur conten
 | `011_beneficiary_qr_policies.sql` | `beneficiary_qr` | ✅ appliqué |
 | `012_attendance_tokens_policies.sql` | `attendance_tokens` | ✅ appliqué |
 
+| `013_waitlist_cascade.sql` | Trigger cascade liste d'attente (promotion automatique + notif) | ⏳ à appliquer |
+
 Tables **sans policy encore** (Epic 7) : `disponibilites`, `mission_followups`, `admin_notes`, `audit_logs`.
 
 ### Vérification après application
@@ -387,7 +389,7 @@ cd mobile && npx tsc --noEmit
 | **Epic 3** | Gestion des Missions | ✅ | ✅ |
 | Story 3.1 | Liste missions (role-aware) | ✅ | ✅ |
 | Story 3.2 | Admin créer/éditer mission + planning | ✅ | ✅ |
-| Story 3.3 | Bénévole — postuler + actions statut admin | ✅ | ✅ |
+| Story 3.3 | Bénévole — postuler + actions statut admin + cascade liste d'attente | ✅ | ✅ |
 | **Epic 4** | Présence & Pointage QR | ⏳ web partiel | ✅ mobile |
 | Story 4.1 | Génération QR bénéficiaire | — | ✅ (`beneficiaire/qr.tsx`) |
 | Story 4.2 | Admin — créer intervention planifiée | ✅ (`admin/interventions/new/`) | ✅ (`admin/interventions/new.tsx`) |
@@ -525,6 +527,31 @@ cd mobile && npx tsc --noEmit
 2. `eas login`
 3. Depuis `mobile/` : `eas build:configure` → génère `eas.json`
 4. Premier build : `eas build --platform android --profile preview`
+
+### Scalabilité — Points d'amélioration par palier
+
+> À ne faire que si les métriques Supabase Dashboard le justifient (latence, connexions, bande passante).
+
+| Palier | Action | Pourquoi |
+|--------|--------|----------|
+| ~200 users | Activer PITR Supabase (Settings → Addons) | Backup continu, rollback à la minute |
+| ~500 users | Passer Supabase Pro ($25/mois) | +connexions Realtime (200→500), +bande passante, PITR inclus |
+| ~800 users | Migrer RLS vers JWT claims | `get_my_role()` fait une requête SQL à chaque vérification RLS — remplacer par `auth.jwt()->'app_metadata'->>'role'` dans toutes les policies |
+| ~1200 users | Ajouter queue BullMQ + Redis pour PDF | PDFKit est synchrone, bloque le thread Node.js sur exports concurrents |
+| ~1500 users | Redis cache sur requêtes fréquentes | Réduire la charge Supabase sur les listes missions/profils |
+| ~10k users | Revoir architecture Supabase direct | En dessous de 10k MAU, l'architecture actuelle tient sans problème |
+
+**Coût estimé à 1500 users :** Supabase Pro $25 + Railway ~$15 = ~$40/mois
+
+**Migration RLS → JWT claims (quand ~800 users) :**
+```sql
+-- Avant (requête DB à chaque vérification)
+get_my_role() = 'admin'
+
+-- Après (lecture du token JWT, zéro requête)
+(auth.jwt()->'app_metadata'->>'role')::text = 'admin'
+-- Nécessite un Supabase Auth Hook qui injecte role + organisation_id dans app_metadata au login
+```
 
 ### Note branche `mobile` — web stub
 
